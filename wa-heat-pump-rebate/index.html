@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f6b4a" />
+    <title>Washington heat pump rebate calculator (2026) · Quick Measure</title>
+    <meta
+      name="description"
+      content="Conservative 2026 Washington heat pump rebate estimate from public PSE, Seattle Clean Heat, City Light, Commerce HEAR, and IRS pages. Not a quote."
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <!-- Analytics: none. No cookies, no trackers. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I budget an $8,000 federal HARP rebate for a Washington heat pump in 2026?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Washington’s federal HARP and HOMES programs are not live. Commerce is evaluating U.S. Department of Energy program notices dated June 1, 2026. Do not budget $8,000 or any HARP/HOMES amount for a 2026 install. Federal 25C and 25D tax credits also ended December 31, 2025 for property placed in service / expenditures after that date."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the PSE heat pump rebate in 2026?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Published PSE figures: $1,500 standard or $2,400 Efficiency Boost (PSE’s own income table; Trade Ally or REP) for electric resistance → air-source heat pump, and the same $1,500 / $2,400 Boost for heat-pump-to-heat-pump when the existing unit is a centrally ducted all-electric heat pump out of original manufacturer warranty (Trade Ally). Income-qualified full gas switch: $4,000 on PSE’s table — not automatic 150% AMI. Hybrid gas furnace path: the flyer lists $1,500 / $2,400 Boost; older PDFs conflict — treat as verify. Do not add hybrid + $4,000. No published oil-to-heat-pump rebate; oil furnaces, boilers, and wall heaters are not eligible for the electric-resistance $1,500 / $2,400 conversion."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is Seattle’s oil Clean Heat rebate?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Seattle Clean Heat (oil → qualifying Mitsubishi, participating contractor): $2,000 instant at any income, plus an extra $4,000 bonus for 81%–150% AMI if installed by September 30, 2026 (up to $6,000). Lower-income households may have a free Office of Housing conversion — do not treat Housing marketing averages as a rebate dollar. Seattle City Light also lists contractor instant discounts under 5.4 tons: $300 (SEER2 15.2 / HSPF2 ≥ 8.1), $400 (SEER2 15.2 / HSPF2 ≥ 8.5), $600 (SEER2 16.0 / HSPF2 ≥ 9.5). DIY is not eligible. Stacking Clean Heat + the City Light discount is not confirmed additive — verify."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Who qualifies for Washington HEAR?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "State HEAR is for households at or under 150% AMI using HUD county income limits (plus some small businesses and adult family homes). Commerce does not publish a statewide heat-pump dollar. Local third-party administrators set amounts. Email HomeRebates@Commerce.wa.gov and put “State Home Electrification and Appliance Rebates (HEAR) Program” in the subject line."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">Quick Measure</a>
+        <span class="tagline">boring home calculators</span>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <h1>Washington heat pump rebate calculator (2026)</h1>
+      <p class="lede">
+        A conservative estimate from public utility and state pages. Not a
+        quote. Programs stack, conflict, expire, and use different income tests.
+        Verify before you buy.
+      </p>
+
+      <form class="card" id="form" novalidate>
+        <p class="note">
+          Required: utility, current heat, and income vs AMI. Zip is optional.
+        </p>
+
+        <div class="field">
+          <label for="zip">ZIP code</label>
+          <span class="hint"
+            >Optional. Used only as a Washington hint, not to pick your
+            utility.</span
+          >
+          <input
+            id="zip"
+            name="zip"
+            type="text"
+            inputmode="numeric"
+            autocomplete="postal-code"
+            maxlength="10"
+            placeholder="e.g. 98118"
+          />
+        </div>
+
+        <div class="field">
+          <label for="utility">Electric utility</label>
+          <select id="utility" name="utility" required>
+            <option value="">Choose...</option>
+            <option value="pse">PSE (Puget Sound Energy)</option>
+            <option value="scl">Seattle City Light</option>
+            <option value="other">Other Washington utility</option>
+            <option value="unknown">I don’t know</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="heat">Current primary heat</label>
+          <select id="heat" name="heat" required>
+            <option value="">Choose...</option>
+            <option value="gas">Gas</option>
+            <option value="oil">Oil</option>
+            <option value="electric-furnace">Electric furnace</option>
+            <option value="zonal">
+              Zonal — baseboard, wall, or radiant electric
+            </option>
+            <option value="heat-pump">Already a heat pump</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="income"
+            >Household income vs Area Median Income (AMI)</label
+          >
+          <select id="income" name="income" required>
+            <option value="">Choose...</option>
+            <option value="under150">At or under 150% AMI</option>
+            <option value="over150">Over 150% AMI</option>
+            <option value="unknown">Unknown</option>
+          </select>
+          <span class="hint after"
+            >150% AMI is the state HEAR screen and Seattle Clean Heat bonus
+            upper bound. PSE Efficiency Boost and PSE’s $4,000 gas-switch rebate
+            use PSE’s own income table — not the same test.</span
+          >
+        </div>
+
+        <button class="btn" type="submit">Estimate</button>
+        <p class="disclaimer" id="form-error" hidden></p>
+      </form>
+
+      <section class="result hidden" id="result" aria-live="polite"></section>
+
+      <section class="sources">
+        <h2>Sources</h2>
+        <p class="note">
+          Figures on this page come only from these official links. If a dollar
+          is not on them, it is not on this calculator.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Program</th>
+                <th>What we use</th>
+                <th>Official page</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>PSE electric resistance → ASHP</td>
+                <td>$1,500 standard; $2,400 Efficiency Boost. Trade Ally or REP. Oil/gas/propane not eligible for this conversion.</td>
+                <td>
+                  <a href="https://www.pse.com/en/rebates/heating/electric-resistance-to-air-source-heat-pump-conversion-rebate"
+                    >pse.com resistance conversion</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>PSE heat pump → heat pump</td>
+                <td>$1,500 / $2,400 Boost. Centrally ducted all-electric, out of original manufacturer warranty. Trade Ally.</td>
+                <td>
+                  <a href="https://www.pse.com/en/rebates/heating/heat-pump-to-heat-pump-upgrade-rebate"
+                    >pse.com heat pump upgrade</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>PSE income-qualified gas switch</td>
+                <td>$4,000. PSE’s income table, not automatic 150% AMI.</td>
+                <td>
+                  <a href="https://www.pse.com/en/rebates/heating/mi-heatpump"
+                    >pse.com moderate-income heat pump</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>PSE Efficiency Boost table</td>
+                <td>Separate from HEAR / 150% AMI.</td>
+                <td>
+                  <a href="https://www.pse.com/en/rebates/efficiency-boost"
+                    >pse.com/boost</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>PSE rebate flyer</td>
+                <td>Hybrid gas furnace path listed at $1,500 / $2,400 Boost. Older PDFs conflict — verify. Do not add hybrid + $4,000.</td>
+                <td>
+                  <a href="https://www.pse.com/-/media/PDFs/REBATES/3905_wb_RebatesFlyer.pdf"
+                    >PSE rebates flyer (PDF)</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>Seattle Clean Heat</td>
+                <td>$2,000 instant any income; +$4,000 bonus 81%–150% AMI if installed by Sept 30, 2026 (up to $6,000).</td>
+                <td>
+                  <a href="https://seattle.gov/environment/climate-change/buildings-and-energy/seattles-clean-heat-program"
+                    >seattle.gov Clean Heat</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>Seattle City Light heating</td>
+                <td>$300 / $400 / $600 contractor instant discounts under 5.4 tons. DIY not eligible.</td>
+                <td>
+                  <a href="https://seattle.gov/city-light/residential-services/home-energy-solutions/heating-and-cooling-your-home"
+                    >seattle.gov City Light heating</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>WA HEAR</td>
+                <td>≤150% AMI (HUD county). No statewide heat-pump dollar published. Local administrators.</td>
+                <td>
+                  <a href="https://www.commerce.wa.gov/energy-incentives/hear/"
+                    >commerce.wa.gov HEAR</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>IRA Home Energy Rebates</td>
+                <td>HARP / HOMES not live. Commerce evaluating DOE notices dated June 1, 2026. Do not budget $8,000.</td>
+                <td>
+                  <a href="https://www.commerce.wa.gov/energy-incentives/ira-home-energy-rebates/"
+                    >commerce.wa.gov IRA Home Energy Rebates</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>IRS OBBB 25C / 25D</td>
+                <td>Credits ended Dec 31, 2025 (placed in service / expenditures after that).</td>
+                <td>
+                  <a href="https://www.irs.gov/newsroom/faqs-for-modification-of-sections-25c-25d-25e-30c-30d-45l-45w-and-179d-under-public-law-119-21-139-stat-72-july-4-2025-commonly-known-as-the-one-big-beautiful-bill-obbb"
+                    >IRS OBBB 25C/25D FAQ</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="faq">
+        <h2>FAQ</h2>
+        <details>
+          <summary>Can I budget an $8,000 federal HARP rebate for a Washington heat pump in 2026?</summary>
+          <p>
+            No. Washington’s federal HARP and HOMES programs are not live.
+            Commerce is evaluating U.S. Department of Energy program notices
+            dated June 1, 2026. Do not budget $8,000 or any HARP/HOMES amount
+            for a 2026 install. Federal 25C and 25D tax credits also ended
+            December 31, 2025 for property placed in service / expenditures
+            after that date.
+          </p>
+        </details>
+        <details>
+          <summary>What is the PSE heat pump rebate in 2026?</summary>
+          <p>
+            Published PSE figures: $1,500 standard or $2,400 Efficiency Boost
+            (PSE’s own income table; Trade Ally or REP) for electric resistance
+            → air-source heat pump, and the same $1,500 / $2,400 Boost for
+            heat-pump-to-heat-pump when the existing unit is a centrally ducted
+            all-electric heat pump out of original manufacturer warranty (Trade
+            Ally). Income-qualified full gas switch: $4,000 on PSE’s table —
+            not automatic 150% AMI. Hybrid gas furnace path: the flyer lists
+            $1,500 / $2,400 Boost; older PDFs conflict — treat as verify. Do
+            not add hybrid + $4,000. No published oil-to-heat-pump rebate; oil
+            furnaces, boilers, and wall heaters are not eligible for the
+            electric-resistance $1,500 / $2,400 conversion.
+          </p>
+        </details>
+        <details>
+          <summary>What is Seattle’s oil Clean Heat rebate?</summary>
+          <p>
+            Seattle Clean Heat (oil → qualifying Mitsubishi, participating
+            contractor): $2,000 instant at any income, plus an extra $4,000
+            bonus for 81%–150% AMI if installed by September 30, 2026 (up to
+            $6,000). Lower-income households may have a free Office of Housing
+            conversion — do not treat Housing marketing averages as a rebate
+            dollar. Seattle City Light also lists contractor instant discounts
+            under 5.4 tons: $300 (SEER2 15.2 / HSPF2 ≥ 8.1), $400 (SEER2 15.2 /
+            HSPF2 ≥ 8.5), $600 (SEER2 16.0 / HSPF2 ≥ 9.5). DIY is not eligible.
+            Stacking Clean Heat + the City Light discount is not confirmed
+            additive — verify.
+          </p>
+        </details>
+        <details>
+          <summary>Who qualifies for Washington HEAR?</summary>
+          <p>
+            State HEAR is for households at or under 150% AMI using HUD county
+            income limits (plus some small businesses and adult family homes).
+            Commerce does not publish a statewide heat-pump dollar. Local
+            third-party administrators set amounts. Email
+            <a href="mailto:HomeRebates@Commerce.wa.gov"
+              >HomeRebates@Commerce.wa.gov</a
+            >
+            and put “State Home Electrification and Appliance Rebates (HEAR)
+            Program” in the subject line.
+          </p>
+        </details>
+      </section>
+
+      <p class="fineprint disclaimer">
+        This page is not a quote, bid, incentive reservation, or legal, tax, or
+        eligibility determination.
+      </p>
+    </main>
+    <footer class="site-footer">
+      <nav aria-label="Calculators">
+        <a href="../index.html">Home</a>
+        <a href="../paint-coverage/">Paint</a>
+        <a href="../concrete-bags/">Concrete</a>
+      </nav>
+      <p>Quick Measure · boring home calculators · not a contractor</p>
+    </footer>
+    <script src="./calculator.js"></script>
+    <script>
+      (function () {
+        var form = document.getElementById("form");
+        var resultEl = document.getElementById("result");
+        var formError = document.getElementById("form-error");
+
+        function esc(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          formError.hidden = true;
+          var data = {
+            zip: document.getElementById("zip").value,
+            utility: document.getElementById("utility").value,
+            heat: document.getElementById("heat").value,
+            income: document.getElementById("income").value,
+          };
+          var out = window.qmWa.estimate(data);
+          if (out.error) {
+            formError.hidden = false;
+            formError.textContent = out.error;
+            resultEl.classList.add("hidden");
+            resultEl.innerHTML = "";
+            return;
+          }
+
+          var html = "";
+          if (out.zipWarning) {
+            html += '<p class="warn">' + esc(out.zipWarning) + "</p>";
+          }
+          html +=
+            '<span class="pill ' +
+            esc(out.pill) +
+            '">' +
+            esc(out.pillLabel) +
+            "</span>";
+          html += "<h2>" + esc(out.headline) + "</h2>";
+          html += "<h3>Utility / city figures</h3><ul>";
+          out.bullets.forEach(function (b) {
+            html += "<li>" + esc(b) + "</li>";
+          });
+          html += "</ul>";
+          html +=
+            '<div class="callout"><strong>' +
+            esc(out.hear.title) +
+            "</strong><p style='margin:0.4rem 0 0'>" +
+            esc(out.hear.body) +
+            "</p></div>";
+          html += "<h3>What is not included</h3><ul>";
+          out.notIncluded.forEach(function (b) {
+            html += "<li>" + esc(b) + "</li>";
+          });
+          html += "</ul>";
+          html += "<h3>Apply / verify</h3><ul>";
+          out.links.forEach(function (l) {
+            html +=
+              '<li><a href="' +
+              esc(l.href) +
+              '" rel="noopener noreferrer">' +
+              esc(l.label) +
+              "</a></li>";
+          });
+          html += "</ul>";
+          html += '<p class="disclaimer">' + esc(out.disclaimer) + "</p>";
+
+          resultEl.innerHTML = html;
+          resultEl.classList.remove("hidden");
+          resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      })();
+    </script>
+  </body>
+</html>
