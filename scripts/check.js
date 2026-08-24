@@ -1,4 +1,5 @@
 const assert = require("assert");
+const fs = require("fs");
 const path = require("path");
 const root = path.join(__dirname, "..");
 const wa = require(path.join(root, "wa-heat-pump-rebate/calculator.js"));
@@ -9,6 +10,10 @@ function hasDollar(text, n) {
   return String(text).indexOf("$" + n.toLocaleString("en-US")) !== -1 ||
     String(text).indexOf("$" + n) !== -1;
 }
+
+// Paint: default coverage is within SuperPaint PDS 350–400
+assert.strictEqual(paint.DEFAULT_COVERAGE, 350);
+assert.ok(paint.DEFAULT_COVERAGE >= 350 && paint.DEFAULT_COVERAGE <= 400);
 
 // Paint: 12×10×8, 1 door, 1 window, 2 coats, 350 sq ft/gal
 const p = paint.calc({
@@ -25,6 +30,17 @@ assert.strictEqual(p.openings, 35);
 assert.strictEqual(p.net, 317);
 assert.ok(Math.abs(p.raw - 317 * 2 / 350) < 1e-9);
 assert.strictEqual(p.buy, 2);
+
+const pDefault = paint.calc({
+  length: 12,
+  width: 10,
+  height: 8,
+  doors: 1,
+  windows: 1,
+  coats: 2,
+});
+assert.strictEqual(pDefault.coverage, 350);
+assert.strictEqual(pDefault.buy, p.buy);
 
 // Concrete: 10×10×4 in, 80 lb
 const c = concrete.calc({ length: 10, width: 10, thickness: 4, bag: "80" });
@@ -146,5 +162,38 @@ all.forEach((r) => {
   assert.ok(r.notIncluded.some((x) => /Do not budget \$8,000/.test(x)));
   assert.ok(r.notIncluded.some((x) => /25C/.test(x)));
 });
+
+const paintHtml = fs.readFileSync(path.join(root, "paint-coverage/index.html"), "utf8");
+assert.ok(paintHtml.includes("Last opened 2026-08-24"));
+assert.ok(paintHtml.includes("<th>Product</th>"));
+assert.ok(paintHtml.includes("<th>What we use</th>"));
+assert.ok(paintHtml.includes("<th>Official page</th>"));
+assert.ok(paintHtml.includes("https://www.sherwin-williams.com/document/PDS/en/035777315682/"));
+assert.ok(paintHtml.includes("https://www.sherwin-williams.com/en-us/project-center/faqs/paint-faq"));
+assert.ok(paintHtml.includes("350–400"));
+assert.ok(/typical openings/i.test(paintHtml));
+assert.ok(/not a contractor quote/i.test(paintHtml));
+
+const concreteHtml = fs.readFileSync(path.join(root, "concrete-bags/index.html"), "utf8");
+assert.ok(concreteHtml.includes("Last opened 2026-08-24"));
+assert.ok(concreteHtml.includes("<th>Product</th>"));
+assert.ok(concreteHtml.includes("<th>What we use</th>"));
+assert.ok(concreteHtml.includes("<th>Official page</th>"));
+assert.ok(concreteHtml.includes("https://www.quikrete.com/pdfs/data_sheet-concrete%20mix%201101.pdf"));
+assert.ok(concreteHtml.includes("https://www.sakrete.com/product/high-strength-concrete-mix/"));
+assert.ok(concreteHtml.includes("https://www.sakrete.com/wp-content/uploads/2024/01/Sakrete-High-Strength-Concrete-Mix-TDS.pdf"));
+assert.ok(concreteHtml.includes("0.30"));
+assert.ok(concreteHtml.includes("0.45"));
+assert.ok(concreteHtml.includes("0.60"));
+assert.ok(/estimate, not a contractor quote/i.test(concreteHtml));
+
+const sitemap = fs.readFileSync(path.join(root, "sitemap.xml"), "utf8");
+assert.ok(sitemap.includes("https://quickmeasure-a3q.pages.dev/paint-coverage/"));
+assert.ok(sitemap.includes("https://quickmeasure-a3q.pages.dev/concrete-bags/"));
+assert.ok(sitemap.includes("https://quickmeasure-a3q.pages.dev/wa-heat-pump-rebate/"));
+
+assert.strictEqual(concrete.YIELD[40], 0.3);
+assert.strictEqual(concrete.YIELD[60], 0.45);
+assert.strictEqual(concrete.YIELD[80], 0.6);
 
 console.log("ok");

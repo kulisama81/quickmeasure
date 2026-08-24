@@ -1,12 +1,14 @@
 /**
  * Rectangular slab premix bags.
- * Typical Quikrete-style yields — verify the bag you buy.
+ * Yields from Quikrete 1101 Concrete Mix PDS and Sakrete High-Strength pages:
+ * 40 lb ≈ 0.30 ft³, 60 lb ≈ 0.45 ft³, 80 lb ≈ 0.60 ft³. Estimate, not a quote.
  */
 (function (root) {
+  // Quikrete 1101 PDS / Sakrete High-Strength (same published yields).
   var YIELD = {
-    40: 0.3,
+    40: 0.3, // 0.30 ft³
     60: 0.45,
-    80: 0.6,
+    80: 0.6, // 0.60 ft³
   };
 
   function calc(input) {

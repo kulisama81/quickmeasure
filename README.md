@@ -6,8 +6,8 @@ Boring home calculators. Static HTML/CSS/JS. No SPA, no npm build, no ads.
 
 - `/` — home
 - `/wa-heat-pump-rebate/` — Washington heat pump rebate calculator (2026). Official published amounts only.
-- `/paint-coverage/` — interior room paint gallons
-- `/concrete-bags/` — rectangular slab premix bags
+- `/paint-coverage/` — interior room paint gallons (coverage from official Sherwin-Williams pages)
+- `/concrete-bags/` — rectangular slab premix bags (yields from official Quikrete / Sakrete pages)
 
 ## Run locally
 
@@ -55,7 +55,7 @@ In the Cloudflare dashboard: **Workers & Pages** → the `quickmeasure` Pages (o
 
 ## What this site will not do
 
-- Invent rebate dollars
+- Invent rebate dollars, paint coverage, or bag yields not on the cited official pages
 - Capture leads, show ads, or set a cookie wall
 - Treat ZIP as your utility
 - Budget a federal HARP/HOMES $8,000 figure for Washington in 2026

@@ -7,7 +7,7 @@
     <title>Concrete bag calculator · Quick Measure</title>
     <meta
       name="description"
-      content="Estimate 40, 60, or 80 lb premix bags for a rectangular slab. Typical Quikrete-style yields. Not a contractor quote."
+      content="Estimate 40, 60, or 80 lb premix bags for a rectangular slab from published Quikrete and Sakrete yields. Not a contractor quote."
     />
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="../styles.css" />
@@ -25,7 +25,8 @@
       <h1>Concrete bag estimator</h1>
       <p class="lede">
         Rectangular slab. Length and width in feet, thickness in inches, then
-        premix bags. Typical bag yields — verify the bag you buy.
+        premix bags. Yields from the official Quikrete and Sakrete pages below.
+        Estimate, not a quote.
       </p>
 
       <form class="card" id="form" novalidate>
@@ -75,9 +76,9 @@
         <div class="field">
           <label for="bag">Bag size</label>
           <select id="bag" name="bag" required>
-            <option value="40">40 lb (~0.30 cu ft)</option>
-            <option value="60">60 lb (~0.45 cu ft)</option>
-            <option value="80" selected>80 lb (~0.60 cu ft)</option>
+            <option value="40">40 lb (0.30 cu ft)</option>
+            <option value="60">60 lb (0.45 cu ft)</option>
+            <option value="80" selected>80 lb (0.60 cu ft)</option>
           </select>
         </div>
         <button class="btn" type="submit">Estimate bags</button>
@@ -86,21 +87,70 @@
 
       <section class="result hidden" id="result" aria-live="polite"></section>
 
+      <section class="sources">
+        <h2>Sources</h2>
+        <p class="note">
+          Bag yields on this page come only from these official links.
+          Last opened 2026-08-24.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>What we use</th>
+                <th>Official page</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Quikrete 1101 Concrete Mix PDS</td>
+                <td>40&nbsp;lb ≈ 0.30 ft³, 60&nbsp;lb ≈ 0.45, 80&nbsp;lb ≈ 0.60</td>
+                <td>
+                  <a href="https://www.quikrete.com/pdfs/data_sheet-concrete%20mix%201101.pdf"
+                    >Quikrete 1101 PDS (PDF)</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>Sakrete High-Strength Concrete Mix</td>
+                <td>Same yields: 40&nbsp;lb ≈ 0.30 ft³, 60&nbsp;lb ≈ 0.45, 80&nbsp;lb ≈ 0.60</td>
+                <td>
+                  <a href="https://www.sakrete.com/product/high-strength-concrete-mix/"
+                    >sakrete.com High-Strength mix</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>Sakrete High-Strength TDS</td>
+                <td>Same yields as the product page</td>
+                <td>
+                  <a href="https://www.sakrete.com/wp-content/uploads/2024/01/Sakrete-High-Strength-Concrete-Mix-TDS.pdf"
+                    >Sakrete High-Strength TDS (PDF)</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="assumptions card" style="margin-top: 1.25rem">
-        <h2>Typical bag yields</h2>
+        <h2>Bag yields we use</h2>
         <ul>
-          <li>~0.60 cubic feet per 80&nbsp;lb bag</li>
-          <li>~0.45 cubic feet per 60&nbsp;lb bag</li>
-          <li>~0.30 cubic feet per 40&nbsp;lb bag</li>
+          <li>0.60 cubic feet per 80&nbsp;lb bag</li>
+          <li>0.45 cubic feet per 60&nbsp;lb bag</li>
+          <li>0.30 cubic feet per 40&nbsp;lb bag</li>
         </ul>
         <p>
-          These are standard Quikrete-style yields used on many bag labels.
-          Always read the bag you are buying; mix, moisture, and waste change
-          the count. Volume = length × width × (thickness in inches ÷ 12).
+          Those figures are the published Quikrete 1101 and Sakrete
+          High-Strength yields in the sources table. Always read the bag you
+          are buying; mix, moisture, and waste change the count. Volume =
+          length × width × (thickness in inches ÷ 12).
         </p>
         <p class="disclaimer">
-          Rounded up. This is not a contractor quote, structural design, or a
-          mix spec.
+          Rounded up. This is an estimate, not a contractor quote, structural
+          design, or a mix spec.
         </p>
       </section>
     </main>
@@ -155,7 +205,7 @@
             "<li>Slab volume: " +
             fmt(out.cuFt, 2) +
             " cu&nbsp;ft</li>" +
-            "<li>Typical yield used: " +
+            "<li>Published yield used: " +
             fmt(out.perBag, 2) +
             " cu&nbsp;ft per bag</li>" +
             "<li>Raw bags: <strong>" +

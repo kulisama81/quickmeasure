@@ -30,8 +30,9 @@
 
       <form class="card" id="form" novalidate>
         <p class="note">
-          Enter feet. Coverage defaults to about 350 sq&nbsp;ft per gallon —
-          edit it to match the can.
+          Enter feet. Coverage defaults to 350 sq&nbsp;ft per gallon (within
+          the SuperPaint PDS 350–400 range at 4 mils wet) — edit it to match
+          the can.
         </p>
         <div class="row-2">
           <div class="field">
@@ -77,6 +78,7 @@
         <div class="row-2">
           <div class="field">
             <label for="doors">Doors</label>
+            <span class="hint">Typical opening, not manufacturer coverage.</span>
             <input
               id="doors"
               name="doors"
@@ -89,6 +91,7 @@
           </div>
           <div class="field">
             <label for="windows">Windows</label>
+            <span class="hint">Typical opening, not manufacturer coverage.</span>
             <input
               id="windows"
               name="windows"
@@ -115,7 +118,7 @@
           </div>
           <div class="field">
             <label for="coverage">Coverage (sq ft / gal)</label>
-            <span class="hint">Label default ~350. Change if the can says otherwise.</span>
+            <span class="hint">Default 350 is within SuperPaint PDS 350–400 sq&nbsp;ft/gal at 4 mils wet. Change if the can says otherwise.</span>
             <input
               id="coverage"
               name="coverage"
@@ -133,6 +136,46 @@
 
       <section class="result hidden" id="result" aria-live="polite"></section>
 
+      <section class="sources">
+        <h2>Sources</h2>
+        <p class="note">
+          Coverage figures on this page come only from these official links.
+          Last opened 2026-08-24. Door and window sizes are typical openings,
+          not manufacturer coverage.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>What we use</th>
+                <th>Official page</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Sherwin-Williams SuperPaint PDS</td>
+                <td>350–400 sq&nbsp;ft/gal at 4 mils wet</td>
+                <td>
+                  <a href="https://www.sherwin-williams.com/document/PDS/en/035777315682/"
+                    >sherwin-williams.com SuperPaint PDS</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>Sherwin-Williams FAQ</td>
+                <td>Use the product data page for coverage</td>
+                <td>
+                  <a href="https://www.sherwin-williams.com/en-us/project-center/faqs/paint-faq"
+                    >sherwin-williams.com paint FAQ</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="assumptions card" style="margin-top: 1.25rem">
         <h2>Assumptions</h2>
         <ul>
@@ -141,12 +184,19 @@
             not included.
           </li>
           <li>
+            Default coverage is <strong>350 sq&nbsp;ft/gal</strong>, within the
+            SuperPaint PDS 350–400 range at 4 mils wet. Edit the field to match
+            the can.
+          </li>
+          <li>
             Each door subtracts <strong>20 sq&nbsp;ft</strong> (3&nbsp;ft ×
-            6&nbsp;ft 8&nbsp;in interior door).
+            6&nbsp;ft 8&nbsp;in typical interior door opening). This is a
+            typical opening, not manufacturer coverage.
           </li>
           <li>
             Each window subtracts <strong>15 sq&nbsp;ft</strong> (3&nbsp;ft ×
-            5&nbsp;ft opening).
+            5&nbsp;ft typical opening). This is a typical opening, not
+            manufacturer coverage.
           </li>
           <li>
             Openings that exceed wall area are clamped to zero remaining paint
@@ -159,7 +209,7 @@
         </ul>
         <p class="disclaimer">
           Trim, texture, waste, primer, and odd walls will move the number.
-          This is not a contractor quote.
+          This is an estimate, not a contractor quote.
         </p>
       </section>
     </main>
