@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://quickmeasure-a3q.pages.dev/sitemap.xml
