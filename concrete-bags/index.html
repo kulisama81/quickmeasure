@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f6b4a" />
+    <title>Concrete bag calculator · Quick Measure</title>
+    <meta
+      name="description"
+      content="Estimate 40, 60, or 80 lb premix bags for a rectangular slab. Typical Quikrete-style yields. Not a contractor quote."
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <!-- Analytics: none. No cookies, no trackers. -->
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">Quick Measure</a>
+        <span class="tagline">boring home calculators</span>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <h1>Concrete bag estimator</h1>
+      <p class="lede">
+        Rectangular slab. Length and width in feet, thickness in inches, then
+        premix bags. Typical bag yields — verify the bag you buy.
+      </p>
+
+      <form class="card" id="form" novalidate>
+        <p class="note">All three dimensions are required. Bags are rounded up.</p>
+        <div class="row-2">
+          <div class="field">
+            <label for="length">Length (ft)</label>
+            <input
+              id="length"
+              name="length"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="0.1"
+              required
+              placeholder="e.g. 10"
+            />
+          </div>
+          <div class="field">
+            <label for="width">Width (ft)</label>
+            <input
+              id="width"
+              name="width"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="0.1"
+              required
+              placeholder="e.g. 10"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label for="thickness">Thickness (inches)</label>
+          <span class="hint">Common slabs are 4 inches. Confirm your spec.</span>
+          <input
+            id="thickness"
+            name="thickness"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.25"
+            value="4"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="bag">Bag size</label>
+          <select id="bag" name="bag" required>
+            <option value="40">40 lb (~0.30 cu ft)</option>
+            <option value="60">60 lb (~0.45 cu ft)</option>
+            <option value="80" selected>80 lb (~0.60 cu ft)</option>
+          </select>
+        </div>
+        <button class="btn" type="submit">Estimate bags</button>
+        <p class="disclaimer" id="form-error" hidden></p>
+      </form>
+
+      <section class="result hidden" id="result" aria-live="polite"></section>
+
+      <section class="assumptions card" style="margin-top: 1.25rem">
+        <h2>Typical bag yields</h2>
+        <ul>
+          <li>~0.60 cubic feet per 80&nbsp;lb bag</li>
+          <li>~0.45 cubic feet per 60&nbsp;lb bag</li>
+          <li>~0.30 cubic feet per 40&nbsp;lb bag</li>
+        </ul>
+        <p>
+          These are standard Quikrete-style yields used on many bag labels.
+          Always read the bag you are buying; mix, moisture, and waste change
+          the count. Volume = length × width × (thickness in inches ÷ 12).
+        </p>
+        <p class="disclaimer">
+          Rounded up. This is not a contractor quote, structural design, or a
+          mix spec.
+        </p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <nav aria-label="Calculators">
+        <a href="../index.html">Home</a>
+        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>
+        <a href="../paint-coverage/">Paint</a>
+      </nav>
+      <p>Quick Measure · boring home calculators · not a contractor</p>
+    </footer>
+    <script src="./calculator.js"></script>
+    <script>
+      (function () {
+        var form = document.getElementById("form");
+        var resultEl = document.getElementById("result");
+        var formError = document.getElementById("form-error");
+
+        function fmt(n, d) {
+          return Number(n).toLocaleString(undefined, {
+            maximumFractionDigits: d,
+            minimumFractionDigits: 0,
+          });
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          formError.hidden = true;
+          var bag = document.getElementById("bag").value;
+          var out = window.qmConcrete.calc({
+            length: document.getElementById("length").value,
+            width: document.getElementById("width").value,
+            thickness: document.getElementById("thickness").value,
+            bag: bag,
+          });
+          if (out.error) {
+            formError.hidden = false;
+            formError.textContent = out.error;
+            resultEl.classList.add("hidden");
+            return;
+          }
+          resultEl.innerHTML =
+            '<span class="pill public">Estimate</span>' +
+            "<h2 class='nums'>Buy " +
+            out.buy +
+            " bag" +
+            (out.buy === 1 ? "" : "s") +
+            " (" +
+            out.bag +
+            "&nbsp;lb)</h2>" +
+            "<ul>" +
+            "<li>Slab volume: " +
+            fmt(out.cuFt, 2) +
+            " cu&nbsp;ft</li>" +
+            "<li>Typical yield used: " +
+            fmt(out.perBag, 2) +
+            " cu&nbsp;ft per bag</li>" +
+            "<li>Raw bags: <strong>" +
+            fmt(out.raw, 2) +
+            "</strong></li>" +
+            "</ul>" +
+            '<p class="disclaimer">Rounded up. Verify the yield printed on the bag. Not a contractor quote.</p>';
+          resultEl.classList.remove("hidden");
+          resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      })();
+    </script>
+  </body>
+</html>

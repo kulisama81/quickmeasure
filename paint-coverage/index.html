@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f6b4a" />
+    <title>Interior paint coverage calculator · Quick Measure</title>
+    <meta
+      name="description"
+      content="Estimate interior wall paint gallons from room length, width, height, doors, windows, and coats. Not a contractor quote."
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <!-- Analytics: none. No cookies, no trackers. -->
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">Quick Measure</a>
+        <span class="tagline">boring home calculators</span>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <h1>Interior paint coverage</h1>
+      <p class="lede">
+        Rectangular room, walls only. Subtract typical door and window
+        rectangles, then divide by coverage. Not a contractor quote.
+      </p>
+
+      <form class="card" id="form" novalidate>
+        <p class="note">
+          Enter feet. Coverage defaults to about 350 sq&nbsp;ft per gallon —
+          edit it to match the can.
+        </p>
+        <div class="row-2">
+          <div class="field">
+            <label for="length">Length (ft)</label>
+            <input
+              id="length"
+              name="length"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="0.1"
+              required
+              placeholder="e.g. 12"
+            />
+          </div>
+          <div class="field">
+            <label for="width">Width (ft)</label>
+            <input
+              id="width"
+              name="width"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="0.1"
+              required
+              placeholder="e.g. 10"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label for="height">Height (ft)</label>
+          <input
+            id="height"
+            name="height"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.1"
+            required
+            placeholder="e.g. 8"
+          />
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="doors">Doors</label>
+            <input
+              id="doors"
+              name="doors"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              step="1"
+              value="1"
+            />
+          </div>
+          <div class="field">
+            <label for="windows">Windows</label>
+            <input
+              id="windows"
+              name="windows"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              step="1"
+              value="1"
+            />
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="coats">Coats</label>
+            <input
+              id="coats"
+              name="coats"
+              type="number"
+              inputmode="decimal"
+              min="0.5"
+              step="0.5"
+              value="2"
+            />
+          </div>
+          <div class="field">
+            <label for="coverage">Coverage (sq ft / gal)</label>
+            <span class="hint">Label default ~350. Change if the can says otherwise.</span>
+            <input
+              id="coverage"
+              name="coverage"
+              type="number"
+              inputmode="decimal"
+              min="1"
+              step="1"
+              value="350"
+            />
+          </div>
+        </div>
+        <button class="btn" type="submit">Estimate gallons</button>
+        <p class="disclaimer" id="form-error" hidden></p>
+      </form>
+
+      <section class="result hidden" id="result" aria-live="polite"></section>
+
+      <section class="assumptions card" style="margin-top: 1.25rem">
+        <h2>Assumptions</h2>
+        <ul>
+          <li>
+            Wall area = 2 × (length + width) × height. Ceiling and floor are
+            not included.
+          </li>
+          <li>
+            Each door subtracts <strong>20 sq&nbsp;ft</strong> (3&nbsp;ft ×
+            6&nbsp;ft 8&nbsp;in interior door).
+          </li>
+          <li>
+            Each window subtracts <strong>15 sq&nbsp;ft</strong> (3&nbsp;ft ×
+            5&nbsp;ft opening).
+          </li>
+          <li>
+            Openings that exceed wall area are clamped to zero remaining paint
+            area.
+          </li>
+          <li>
+            Purchase gallons are rounded up. The raw (unrounded) number is also
+            shown.
+          </li>
+        </ul>
+        <p class="disclaimer">
+          Trim, texture, waste, primer, and odd walls will move the number.
+          This is not a contractor quote.
+        </p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <nav aria-label="Calculators">
+        <a href="../index.html">Home</a>
+        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>
+        <a href="../concrete-bags/">Concrete</a>
+      </nav>
+      <p>Quick Measure · boring home calculators · not a contractor</p>
+    </footer>
+    <script src="./calculator.js"></script>
+    <script>
+      (function () {
+        var form = document.getElementById("form");
+        var resultEl = document.getElementById("result");
+        var formError = document.getElementById("form-error");
+
+        function fmt(n, d) {
+          return Number(n).toLocaleString(undefined, {
+            maximumFractionDigits: d,
+            minimumFractionDigits: 0,
+          });
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          formError.hidden = true;
+          var out = window.qmPaint.calc({
+            length: document.getElementById("length").value,
+            width: document.getElementById("width").value,
+            height: document.getElementById("height").value,
+            doors: document.getElementById("doors").value,
+            windows: document.getElementById("windows").value,
+            coats: document.getElementById("coats").value,
+            coverage: document.getElementById("coverage").value,
+          });
+          if (out.error) {
+            formError.hidden = false;
+            formError.textContent = out.error;
+            resultEl.classList.add("hidden");
+            return;
+          }
+          resultEl.innerHTML =
+            '<span class="pill public">Estimate</span>' +
+            "<h2 class='nums'>Buy " +
+            out.buy +
+            " gallon" +
+            (out.buy === 1 ? "" : "s") +
+            "</h2>" +
+            "<ul>" +
+            "<li>Gross wall area: " +
+            fmt(out.gross, 1) +
+            " sq&nbsp;ft</li>" +
+            "<li>Doors/windows subtracted: " +
+            fmt(out.openings, 1) +
+            " sq&nbsp;ft</li>" +
+            "<li>Net wall area: " +
+            fmt(out.net, 1) +
+            " sq&nbsp;ft</li>" +
+            "<li>After " +
+            fmt(out.coats, 1) +
+            " coat(s): " +
+            fmt(out.paintSqFt, 1) +
+            " sq&nbsp;ft of paint film</li>" +
+            "<li>Raw gallons at " +
+            fmt(out.coverage, 0) +
+            " sq&nbsp;ft/gal: <strong>" +
+            fmt(out.raw, 2) +
+            "</strong></li>" +
+            "</ul>" +
+            '<p class="disclaimer">Rounded up for purchase. Not a contractor quote.</p>';
+          resultEl.classList.remove("hidden");
+          resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      })();
+    </script>
+  </body>
+</html>
