@@ -29,11 +29,7 @@
       </p>
 
       <form class="card" id="form" novalidate>
-        <p class="note">
-          Enter feet. Coverage defaults to 350 sq&nbsp;ft of wall per gallon —
-          the conservative/low-end SuperPaint PDS figure (350–400 at 4 mils
-          wet). Edit it to match the can.
-        </p>
+        <p class="note">Enter feet.</p>
         <div class="row-2">
           <div class="field">
             <label for="length">Length (ft)</label>
@@ -103,32 +99,34 @@
             />
           </div>
         </div>
-        <div class="row-2">
-          <div class="field">
-            <label for="coats">Coats</label>
-            <input
-              id="coats"
-              name="coats"
-              type="number"
-              inputmode="decimal"
-              min="0.5"
-              step="0.5"
-              value="2"
-            />
-          </div>
-          <div class="field">
-            <label for="coverage">Sq ft of wall per gallon</label>
-            <span class="hint">Default 350 is the conservative/low-end SuperPaint PDS number (350–400 at 4 mils wet). Edit to match the can.</span>
-            <input
-              id="coverage"
-              name="coverage"
-              type="number"
-              inputmode="decimal"
-              min="1"
-              step="1"
-              value="350"
-            />
-          </div>
+        <div class="field">
+          <label for="coats">Coats</label>
+          <input
+            id="coats"
+            name="coats"
+            type="number"
+            inputmode="decimal"
+            min="0.5"
+            step="0.5"
+            value="2"
+          />
+        </div>
+        <div class="field">
+          <label for="coverage">How far one gallon goes (sq ft)</label>
+          <input
+            id="coverage"
+            name="coverage"
+            type="number"
+            inputmode="decimal"
+            min="1"
+            step="1"
+            value="350"
+          />
+          <span class="hint after"
+            >How much wall one gallon covers. Leave this at 350 unless your
+            paint can says a different number. 350 is Sherwin-Williams’
+            official low estimate, so we tell you to buy enough.</span
+          >
         </div>
         <button class="btn" type="submit">Estimate gallons</button>
         <p class="disclaimer" id="form-error" hidden></p>
@@ -184,9 +182,8 @@
             not included.
           </li>
           <li>
-            Default coverage is <strong>350 sq&nbsp;ft/gal</strong>, the
-            conservative/low-end SuperPaint PDS figure (350–400 at 4 mils wet).
-            Edit the field to match the can.
+            Default coverage is <strong>350 sq&nbsp;ft/gal</strong>. Edit the
+            field to match the can. Official range is on the sources table.
           </li>
           <li>
             Each door subtracts <strong>20 sq&nbsp;ft</strong> (3&nbsp;ft ×
