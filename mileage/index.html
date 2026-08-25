@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f6b4a" />
+    <title>How much the IRS says one mile is worth (2026) · Sourced Calc</title>
+    <meta
+      name="description"
+      content="Look up the official 2026 IRS cents-per-mile rate from the trip date and trip type. That is how much the IRS says one mile is worth. Estimate, not tax advice."
+    />
+    <link rel="canonical" href="https://sourcedcalc.com/mileage/" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <!-- Analytics: none. No cookies, no trackers. -->
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">Sourced Calc</a>
+        <span class="tagline">boring home calculators</span>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <h1>How much the IRS says one mile is worth (2026)</h1>
+      <p class="lede">
+        Pick the day of the trip and what kind of trip it was. We look up the
+        official cents-per-mile rate. Estimate, not tax advice.
+      </p>
+
+      <form class="card" id="form" novalidate>
+        <p class="note">
+          When the trip was and what kind of trip are required. Miles are
+          optional.
+        </p>
+        <div class="field">
+          <label for="date">When was the trip?</label>
+          <input id="date" name="date" type="date" required />
+          <span class="hint after"
+            >The official rate depends on the day of the trip. 2026 has one
+            rate for January through June and another for July through
+            December.</span
+          >
+        </div>
+        <div class="field">
+          <label for="type">What kind of trip was it?</label>
+          <select id="type" name="type" required>
+            <option value="">Choose...</option>
+            <option value="business">Business or self-employed</option>
+            <option value="charity">Charity</option>
+            <option value="medical">Medical</option>
+            <option value="moving">Moving for military</option>
+          </select>
+          <span class="hint after"
+            >Business or self-employed is work driving. Charity is volunteer
+            driving for a charity. Medical is driving for medical care. Moving
+            is only for active-duty military — the IRS page does not treat a
+            regular household move as this rate.</span
+          >
+        </div>
+        <div class="field">
+          <label for="miles">How many miles? (optional)</label>
+          <input
+            id="miles"
+            name="miles"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="any"
+            placeholder="e.g. 100"
+          />
+          <span class="hint after"
+            >Leave this blank to only see the cents-per-mile rate. If you type
+            miles, we multiply the official rate by those miles.</span
+          >
+        </div>
+        <button class="btn" type="submit">Look up the rate</button>
+        <p class="disclaimer" id="form-error" hidden></p>
+      </form>
+
+      <section class="result hidden" id="result" aria-live="polite"></section>
+
+      <section class="sources">
+        <h2>Sources</h2>
+        <p class="note">
+          Cents on this page come only from these official links.
+          Last opened 2026-08-25. If a date is not in 2026, we do not invent a
+          rate.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>What we use</th>
+                <th>Official page</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>IRS standard mileage rates</td>
+                <td>
+                  Published 2026 table: Jan 1–Jun 30 business 72.5¢, charity
+                  14¢, medical 20.5¢, moving (military only) 20.5¢. Jul 1–Dec
+                  31 business 76¢, charity 14¢, medical 23.5¢, moving (military
+                  only) 23.5¢.
+                </td>
+                <td>
+                  <a
+                    href="https://www.irs.gov/tax-professionals/standard-mileage-rates"
+                    >Standard mileage rates</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>IRS Notice 2026-10</td>
+                <td>January 1 through June 30, 2026 rates, as published</td>
+                <td>
+                  <a href="https://www.irs.gov/pub/irs-drop/n-26-10.pdf"
+                    >Notice 2026-10 (PDF)</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>IRS mid-year revision</td>
+                <td>
+                  July 1 through December 31, 2026 rates. Modifies Notice
+                  2026-10. Charity stays 14¢.
+                </td>
+                <td>
+                  <a href="https://www.irs.gov/irb/2026-29_IRB"
+                    >2026-29 Internal Revenue Bulletin</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="assumptions card" style="margin-top: 1.25rem">
+        <h2>What this number is</h2>
+        <ul>
+          <li>
+            This is how much the IRS says one mile is worth.
+          </li>
+          <li>
+            Business or self-employed is <strong>72.5¢</strong> a mile from
+            January 1 through June 30, 2026, and <strong>76¢</strong> a mile
+            from July 1 through December 31, 2026.
+          </li>
+          <li>
+            Charity is <strong>14¢</strong> a mile for both halves of 2026.
+          </li>
+          <li>
+            Medical and moving for military are <strong>20.5¢</strong> a mile
+            from January 1 through June 30, 2026, and
+            <strong>23.5¢</strong> a mile from July 1 through December 31,
+            2026. The IRS page labels moving as military only. A regular
+            household move is not this rate.
+          </li>
+          <li>
+            We do not have official rates here for any year other than 2026.
+          </li>
+        </ul>
+        <p class="disclaimer">
+          This is an estimate, not tax advice or a quote. Whether a trip
+          qualifies is still between you and the IRS.
+        </p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <nav aria-label="Calculators">
+        <a href="../index.html">Home</a>
+        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>
+        <a href="../paint-coverage/">Paint</a>
+        <a href="../concrete-bags/">Concrete</a>
+        <a href="../mortgage-limit/">Mortgage cap</a>
+        <a href="../retirement-limits/">401(k) / IRA</a>
+      </nav>
+      <p>Sourced Calc · boring home calculators · not a contractor</p>
+    </footer>
+    <script src="./calculator.js"></script>
+    <script>
+      (function () {
+        var form = document.getElementById("form");
+        var resultEl = document.getElementById("result");
+        var formError = document.getElementById("form-error");
+        var api = window.qmMileage;
+
+        function esc(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          formError.hidden = true;
+          var out = api.lookup({
+            date: document.getElementById("date").value,
+            type: document.getElementById("type").value,
+            miles: document.getElementById("miles").value,
+          });
+          if (out.error) {
+            formError.hidden = false;
+            formError.textContent = out.error;
+            resultEl.classList.add("hidden");
+            return;
+          }
+          var html =
+            '<span class="pill public">Estimate</span>' +
+            "<h2 class='nums'>" +
+            esc(out.headline) +
+            "</h2>" +
+            '<p class="callout">' +
+            esc(out.humanLine) +
+            "</p>" +
+            "<ul>" +
+            "<li>Trip date: " +
+            esc(out.date) +
+            "</li>" +
+            "<li>Kind of trip: " +
+            esc(out.typeLabel) +
+            "</li>" +
+            "<li>Official period: " +
+            esc(out.periodLabel) +
+            "</li>" +
+            "<li>Official rate: <strong class='nums'>" +
+            esc(out.rateLabel) +
+            "</strong></li>";
+          if (out.comparison) {
+            html += "<li>" + esc(out.comparison) + "</li>";
+          }
+          html +=
+            "</ul>" +
+            '<p class="disclaimer">' +
+            esc(out.disclaimer) +
+            "</p>";
+          resultEl.innerHTML = html;
+          resultEl.classList.remove("hidden");
+          resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      })();
+    </script>
+  </body>
+</html>

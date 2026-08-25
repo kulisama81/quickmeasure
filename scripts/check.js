@@ -8,6 +8,7 @@ const concrete = require(path.join(root, "concrete-bags/calculator.js"));
 const loan = require(path.join(root, "mortgage-limit/calculator.js"));
 const loanCsv = require(path.join(root, "scripts/loan-limit-csv.js"));
 const retirement = require(path.join(root, "retirement-limits/calculator.js"));
+const mileage = require(path.join(root, "mileage/calculator.js"));
 
 function hasDollar(text, n) {
   return String(text).indexOf("$" + n.toLocaleString("en-US")) !== -1 ||
@@ -275,6 +276,7 @@ assert.ok(sitemap.includes("https://sourcedcalc.com/concrete-bags/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/wa-heat-pump-rebate/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/mortgage-limit/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/retirement-limits/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/mileage/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/</loc>"));
 assert.ok(
   !/pages\.dev/.test(sitemap),
@@ -298,6 +300,7 @@ const htmlPages = [
     "retirement-limits/index.html",
     "https://sourcedcalc.com/retirement-limits/",
   ],
+  ["mileage/index.html", "https://sourcedcalc.com/mileage/"],
 ];
 var GA4_ID = "G-3SB1LCNKZK";
 
@@ -541,6 +544,10 @@ function assertNoAds(html, name) {
     "retirement-limits",
     fs.readFileSync(path.join(root, "retirement-limits/index.html"), "utf8"),
   ],
+  [
+    "mileage",
+    fs.readFileSync(path.join(root, "mileage/index.html"), "utf8"),
+  ],
 ].forEach(function (pair) {
   assertNoAds(pair[1], pair[0]);
 });
@@ -713,5 +720,117 @@ assert.ok(
 );
 assertNoAds(homeHtml, "index.html");
 assertNoAds(retHtml, "retirement-limits");
+
+assert.strictEqual(mileage.YEAR, 2026);
+assert.strictEqual(mileage.RATES.first.business, 72.5);
+assert.strictEqual(mileage.RATES.second.business, 76);
+assert.strictEqual(mileage.RATES.first.charity, 14);
+assert.strictEqual(mileage.RATES.second.charity, 14);
+assert.strictEqual(mileage.RATES.first.medical, 20.5);
+assert.strictEqual(mileage.RATES.second.medical, 23.5);
+assert.strictEqual(mileage.RATES.first.moving, 20.5);
+assert.strictEqual(mileage.RATES.second.moving, 23.5);
+assert.strictEqual(mileage.RATES.first.charity, mileage.RATES.second.charity);
+
+function mile(date, type, miles) {
+  return mileage.lookup({ date: date, type: type, miles: miles });
+}
+
+assert.strictEqual(mile("2026-01-01", "business").rateCents, 72.5);
+assert.strictEqual(mile("2026-06-30", "business").rateCents, 72.5);
+assert.strictEqual(mile("2026-07-01", "business").rateCents, 76);
+assert.strictEqual(mile("2026-12-31", "business").rateCents, 76);
+assert.strictEqual(mile("2026-01-15", "charity").rateCents, 14);
+assert.strictEqual(mile("2026-07-15", "charity").rateCents, 14);
+assert.strictEqual(mile("2026-03-01", "medical").rateCents, 20.5);
+assert.strictEqual(mile("2026-08-01", "medical").rateCents, 23.5);
+assert.strictEqual(mile("2026-03-01", "moving").rateCents, 20.5);
+assert.strictEqual(mile("2026-08-01", "moving").rateCents, 23.5);
+
+var janBiz = mile("2026-01-15", "business", 100);
+assert.ok(!janBiz.error);
+assert.strictEqual(janBiz.rateCents, 72.5);
+assert.strictEqual(janBiz.total, 72.5);
+assert.ok(/\$72\.50/.test(janBiz.totalLabel + janBiz.comparison));
+
+var julBiz = mile("2026-07-01", "business", 10);
+assert.strictEqual(julBiz.rateCents, 76);
+assert.strictEqual(julBiz.total, 7.6);
+
+var y2025 = mile("2025-06-15", "business", 100);
+assert.ok(y2025.error, "2025 must not invent a rate");
+assert.ok(y2025.rateCents == null, "2025 must not invent cents");
+assert.ok(y2025.rate == null);
+assert.ok(y2025.total == null);
+assert.ok(y2025.headline == null);
+assert.ok(/only has the official 2026/i.test(y2025.error));
+
+var y2027 = mile("2027-01-01", "charity");
+assert.ok(y2027.error);
+assert.ok(y2027.rateCents == null);
+
+assert.strictEqual(
+  mileage.HUMAN_LINE,
+  "This is how much the IRS says one mile is worth."
+);
+assert.strictEqual(mile("2026-01-01", "business").humanLine, mileage.HUMAN_LINE);
+assert.ok(/estimate, not tax advice/i.test(mile("2026-07-01", "medical").disclaimer));
+
+const mileHtml = fs.readFileSync(path.join(root, "mileage/index.html"), "utf8");
+assert.ok(mileHtml.includes("Last opened 2026-08-25"));
+assert.ok(
+  mileHtml.includes(
+    "https://www.irs.gov/tax-professionals/standard-mileage-rates"
+  )
+);
+assert.ok(mileHtml.includes("https://www.irs.gov/pub/irs-drop/n-26-10.pdf"));
+assert.ok(mileHtml.includes("https://www.irs.gov/irb/2026-29_IRB"));
+assert.ok(mileHtml.includes("<th>Product</th>"));
+assert.ok(mileHtml.includes("72.5"));
+assert.ok(mileHtml.includes("76"));
+assert.ok(/14¢/.test(mileHtml));
+assert.ok(mileHtml.includes("20.5"));
+assert.ok(mileHtml.includes("23.5"));
+assert.ok(mileHtml.includes(mileage.HUMAN_LINE));
+assert.ok(/out\.humanLine/.test(mileHtml), "result must render the human line");
+assert.ok(/estimate, not tax advice/i.test(mileHtml));
+assert.ok(!/G-[A-Z0-9]+/.test(mileHtml), "no invented GA4 id");
+assert.ok(!/gtag\(|googletagmanager/i.test(mileHtml));
+assert.ok(/military only/i.test(mileHtml));
+assert.ok(!/2025 mileage|70¢ a mile for 2025/i.test(mileHtml));
+
+const mileLabels = [];
+mileHtml.replace(/<label[^>]*>([\s\S]*?)<\/label>/g, function (_, inner) {
+  mileLabels.push(inner.replace(/\s+/g, " ").trim());
+  return _;
+});
+assert.ok(mileLabels.length >= 3, "mileage page needs field labels");
+mileLabels.forEach(function (lab) {
+  assert.ok(
+    !/^(SMR|IRB|Announcement 2026-11)$/i.test(lab),
+    "label must not be jargon-only: " + lab
+  );
+});
+assert.ok(
+  mileLabels.some(function (l) {
+    return /when was the trip/i.test(l);
+  })
+);
+assert.ok(
+  mileLabels.some(function (l) {
+    return /what kind of trip/i.test(l);
+  })
+);
+assert.ok(
+  mileLabels.some(function (l) {
+    return /how many miles/i.test(l);
+  })
+);
+
+assert.ok(homeHtml.includes("./mileage/"));
+assert.ok(
+  homeHtml.includes("How much the IRS says one mile is worth (2026)")
+);
+assertNoAds(mileHtml, "mileage");
 
 console.log("ok");
