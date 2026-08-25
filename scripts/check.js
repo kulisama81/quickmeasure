@@ -299,6 +299,33 @@ const htmlPages = [
     "https://sourcedcalc.com/retirement-limits/",
   ],
 ];
+var GA4_ID = "G-3SB1LCNKZK";
+
+function measurementIds(text) {
+  return text.match(/G-[A-Z0-9]+/g) || [];
+}
+
+function assertOnlySourcedCalcGa4(text, name) {
+  measurementIds(text).forEach(function (id) {
+    assert.strictEqual(
+      id,
+      GA4_ID,
+      name + " invented measurement id " + id
+    );
+  });
+}
+
+function assertLiveGa4(html, name) {
+  assert.ok(html.includes(GA4_ID), name + " must contain " + GA4_ID);
+  assert.ok(/gtag/i.test(html), name + " must contain gtag");
+  assert.ok(/ga\.js/.test(html), name + " must load the shared ga snippet");
+  assert.ok(
+    !/Analytics:\s*none/i.test(html),
+    name + " must not keep the old Analytics: none comment"
+  );
+  assertOnlySourcedCalcGa4(html, name);
+}
+
 htmlPages.forEach(function (pair) {
   var html = fs.readFileSync(path.join(root, pair[0]), "utf8");
   assert.ok(
@@ -311,7 +338,24 @@ htmlPages.forEach(function (pair) {
     pair[0] + " must not say Quick Measure"
   );
   assert.ok(!/pages\.dev/.test(html), pair[0] + " must not cite pages.dev");
+  assertLiveGa4(html, pair[0]);
 });
+
+const gaJs = fs.readFileSync(path.join(root, "ga.js"), "utf8");
+assert.ok(gaJs.includes(GA4_ID), "ga.js must configure " + GA4_ID);
+assert.ok(/function gtag/.test(gaJs), "ga.js must define gtag");
+assert.ok(
+  /gtag\(\s*["']config["']\s*,\s*["']G-3SB1LCNKZK["']\s*\)/.test(gaJs),
+  "ga.js must gtag config the sourcedcalc.com id"
+);
+assertOnlySourcedCalcGa4(gaJs, "ga.js");
+
+assert.throws(function () {
+  assertOnlySourcedCalcGa4(
+    '<script src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>',
+    "invented"
+  );
+}, /invented measurement id/);
 
 var notFound = fs.readFileSync(path.join(root, "404.html"), "utf8");
 assert.ok(notFound.includes("Sourced Calc"));
@@ -623,8 +667,6 @@ assert.ok(retHtml.includes("$1,100"));
 assert.ok(retHtml.includes(retirement.HUMAN_LINE));
 assert.ok(/out\.humanLine/.test(retHtml), "result must render the human line");
 assert.ok(/estimate, not tax advice/i.test(retHtml));
-assert.ok(!/G-[A-Z0-9]+/.test(retHtml), "no invented GA4 id");
-assert.ok(!/gtag\(|googletagmanager/i.test(retHtml));
 
 const retLabels = [];
 retHtml.replace(/<label[^>]*>([\s\S]*?)<\/label>/g, function (_, inner) {
