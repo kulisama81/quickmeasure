@@ -212,10 +212,75 @@ assert.ok(concreteHtml.includes("0.45"));
 assert.ok(concreteHtml.includes("0.60"));
 assert.ok(/estimate, not a contractor quote/i.test(concreteHtml));
 
+const host = require(path.join(root, "scripts/public-host.js"));
+assert.strictEqual(host.PUBLIC_ORIGIN, "https://sourcedcalc.com");
+assert.strictEqual(
+  host.canonicalRedirect("https://quickmeasure-a3q.pages.dev/paint-coverage/?x=1"),
+  "https://sourcedcalc.com/paint-coverage/?x=1"
+);
+assert.strictEqual(
+  host.canonicalRedirect("https://www.sourcedcalc.com/concrete-bags/"),
+  "https://sourcedcalc.com/concrete-bags/"
+);
+assert.strictEqual(host.canonicalRedirect("https://sourcedcalc.com/"), null);
+assert.strictEqual(
+  host.canonicalRedirect("https://preview.quickmeasure-a3q.pages.dev/"),
+  null
+);
+
+const middleware = fs.readFileSync(
+  path.join(root, "functions/_middleware.js"),
+  "utf8"
+);
+assert.ok(middleware.includes('PAGES_DEV_HOST = "quickmeasure-a3q.pages.dev"'));
+assert.ok(middleware.includes('PUBLIC_HOST = "sourcedcalc.com"'));
+assert.ok(middleware.includes("Response.redirect"));
+assert.ok(middleware.includes("301"));
+assert.ok(
+  !fs.existsSync(path.join(root, "_redirects")),
+  "_redirects cannot match hostname; host 301s belong in Functions middleware"
+);
+
 const sitemap = fs.readFileSync(path.join(root, "sitemap.xml"), "utf8");
-assert.ok(sitemap.includes("https://quickmeasure-a3q.pages.dev/paint-coverage/"));
-assert.ok(sitemap.includes("https://quickmeasure-a3q.pages.dev/concrete-bags/"));
-assert.ok(sitemap.includes("https://quickmeasure-a3q.pages.dev/wa-heat-pump-rebate/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/paint-coverage/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/concrete-bags/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/wa-heat-pump-rebate/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/</loc>"));
+assert.ok(
+  !/pages\.dev/.test(sitemap),
+  "sitemap must not list *.pages.dev as the public host"
+);
+
+const robots = fs.readFileSync(path.join(root, "robots.txt"), "utf8");
+assert.ok(robots.includes("Sitemap: https://sourcedcalc.com/sitemap.xml"));
+assert.ok(!/pages\.dev/.test(robots), "robots.txt must cite sourcedcalc.com");
+
+const htmlPages = [
+  ["index.html", "https://sourcedcalc.com/"],
+  ["paint-coverage/index.html", "https://sourcedcalc.com/paint-coverage/"],
+  ["concrete-bags/index.html", "https://sourcedcalc.com/concrete-bags/"],
+  [
+    "wa-heat-pump-rebate/index.html",
+    "https://sourcedcalc.com/wa-heat-pump-rebate/",
+  ],
+];
+htmlPages.forEach(function (pair) {
+  var html = fs.readFileSync(path.join(root, pair[0]), "utf8");
+  assert.ok(
+    html.indexOf('rel="canonical" href="' + pair[1] + '"') !== -1,
+    pair[0] + " canonical"
+  );
+  assert.ok(html.includes("Sourced Calc"), pair[0] + " brand");
+  assert.ok(
+    html.indexOf("Quick Measure") === -1,
+    pair[0] + " must not say Quick Measure"
+  );
+  assert.ok(!/pages\.dev/.test(html), pair[0] + " must not cite pages.dev");
+});
+
+var notFound = fs.readFileSync(path.join(root, "404.html"), "utf8");
+assert.ok(notFound.includes("Sourced Calc"));
+assert.ok(notFound.indexOf("Quick Measure") === -1);
 
 assert.strictEqual(concrete.YIELD[40], 0.3);
 assert.strictEqual(concrete.YIELD[60], 0.45);

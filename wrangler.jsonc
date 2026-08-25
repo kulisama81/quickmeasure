@@ -1,8 +1,11 @@
 {
   "name": "quickmeasure",
-  // Static files only — no Worker script, no npm build.
-  // Deploy: npx wrangler deploy
-  // Pages:  npx wrangler pages deploy .
+  // Static files + Pages Functions middleware for host 301s.
+  // Public host is sourcedcalc.com (see scripts/public-host.js).
+  // Custom domains are attached via the Pages domains API, not wrangler routes:
+  // wrangler 4.x has no `pages domain` command; Workers `routes.custom_domain`
+  // would be a different product than this existing Pages project.
+  // Deploy: npx wrangler pages deploy .
   "compatibility_date": "2026-08-01",
   "assets": {
     "directory": ".",

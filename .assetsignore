@@ -3,3 +3,6 @@
 **/.DS_Store
 wrangler.jsonc
 node_modules
+functions
+scripts
+README.md

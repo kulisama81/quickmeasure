@@ -1,6 +1,8 @@
-# Quick Measure
+# Sourced Calc
 
 Boring home calculators. Static HTML/CSS/JS. No SPA, no npm build, no ads.
+
+Public host: [https://sourcedcalc.com](https://sourcedcalc.com). The Cloudflare Pages project name is still `quickmeasure` (`https://quickmeasure-a3q.pages.dev` 301s to the custom domain).
 
 ## Pages
 
@@ -30,7 +32,7 @@ There is no `npm install` and no build step.
 
 ## Cloudflare Pages
 
-Connect the GitHub repo as a **Pages** project.
+Connect the GitHub repo as a **Pages** project named `quickmeasure`.
 
 - **Build command:** leave empty (this is already the site)
 - **Build output directory / root:** `/` (the repository root is the static root)
@@ -47,11 +49,27 @@ npx wrangler deploy
 npx wrangler pages deploy .
 ```
 
-Project name: `quickmeasure`. Compatibility date: `2026-08-01`.
+Project name: `quickmeasure`. Compatibility date: `2026-08-01`. Public host: `sourcedcalc.com`.
 
-## Custom domain later
+### Custom domain
 
-In the Cloudflare dashboard: **Workers & Pages** → the `quickmeasure` Pages (or Workers) project → **Custom domains** → add your domain. Cloudflare will ask you to add a CNAME (or use their nameservers) so the domain points at the project. No code change is required.
+Apex + www are attached to the existing Pages project (not a new project, not a newly purchased domain).
+
+Wrangler 4.x has **no** `pages domain` command. Add the hostnames with the Pages domains API (same as **Workers & Pages → quickmeasure → Custom domains**):
+
+```bash
+# requires CLOUDFLARE_API_TOKEN with Pages Edit + Zone DNS Edit
+node scripts/attach-custom-domain.js
+```
+
+That script:
+
+1. `POST /accounts/{account_id}/pages/projects/quickmeasure/domains` for `sourcedcalc.com` and `www.sourcedcalc.com`
+2. Creates proxied CNAME records to `quickmeasure-a3q.pages.dev` if they are missing (apex uses Cloudflare CNAME flattening)
+
+Canonicals, `sitemap.xml`, and `robots.txt` hardcode `https://sourcedcalc.com`. This repo has no HTML build, so a `SITE_URL` env var would not rewrite those files.
+
+Host-level 301s (`quickmeasure-a3q.pages.dev` and `www` → `https://sourcedcalc.com` + same path) live in `functions/_middleware.js`. Pages `_redirects` cannot match on hostname, so a path rule would also fire on the custom domain.
 
 ## What this site will not do
 
