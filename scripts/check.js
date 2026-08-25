@@ -9,6 +9,7 @@ const loan = require(path.join(root, "mortgage-limit/calculator.js"));
 const loanCsv = require(path.join(root, "scripts/loan-limit-csv.js"));
 const retirement = require(path.join(root, "retirement-limits/calculator.js"));
 const mileage = require(path.join(root, "mileage/calculator.js"));
+const hsa = require(path.join(root, "hsa-limits/calculator.js"));
 
 function hasDollar(text, n) {
   return String(text).indexOf("$" + n.toLocaleString("en-US")) !== -1 ||
@@ -277,6 +278,7 @@ assert.ok(sitemap.includes("https://sourcedcalc.com/wa-heat-pump-rebate/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/mortgage-limit/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/retirement-limits/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/mileage/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/hsa-limits/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/</loc>"));
 assert.ok(
   !/pages\.dev/.test(sitemap),
@@ -301,6 +303,7 @@ const htmlPages = [
     "https://sourcedcalc.com/retirement-limits/",
   ],
   ["mileage/index.html", "https://sourcedcalc.com/mileage/"],
+  ["hsa-limits/index.html", "https://sourcedcalc.com/hsa-limits/"],
 ];
 var GA4_ID = "G-3SB1LCNKZK";
 
@@ -547,6 +550,10 @@ function assertNoAds(html, name) {
   [
     "mileage",
     fs.readFileSync(path.join(root, "mileage/index.html"), "utf8"),
+  ],
+  [
+    "hsa-limits",
+    fs.readFileSync(path.join(root, "hsa-limits/index.html"), "utf8"),
   ],
 ].forEach(function (pair) {
   assertNoAds(pair[1], pair[0]);
@@ -831,5 +838,111 @@ assert.ok(
   homeHtml.includes("How much the IRS says one mile is worth (2026)")
 );
 assertNoAds(mileHtml, "mileage");
+
+assert.strictEqual(hsa.YEAR, 2026);
+assert.strictEqual(hsa.SELF_BASE, 4400);
+assert.strictEqual(hsa.FAMILY_BASE, 8750);
+assert.strictEqual(hsa.AGE_55_EXTRA, 1000);
+assert.strictEqual(hsa.SELF_MIN_DEDUCTIBLE, 1700);
+assert.strictEqual(hsa.FAMILY_MIN_DEDUCTIBLE, 3400);
+assert.strictEqual(hsa.SELF_MAX_OOP, 8500);
+assert.strictEqual(hsa.FAMILY_MAX_OOP, 17000);
+assert.ok(hsa.SELF_BASE !== 4300, "do not use the 2025 self-only cap as 2026");
+assert.ok(hsa.FAMILY_BASE !== 8550, "do not use the 2025 family cap as 2026");
+assert.ok(hsa.AGE_55_EXTRA !== 1100, "do not invent an IRA-style extra");
+assert.ok(
+  hsa.SELF_BASE !== 2200 && hsa.FAMILY_BASE !== 2200,
+  "do not use the excepted-benefit HRA figure as an HSA cap"
+);
+
+function hsaLookup(coverage, age55) {
+  return hsa.lookup({ coverage: coverage, age55: age55 });
+}
+
+assert.strictEqual(hsaLookup("self", "no").limit, 4400);
+assert.strictEqual(hsaLookup("self", "yes").limit, 5400);
+assert.strictEqual(hsaLookup("family", "no").limit, 8750);
+assert.strictEqual(hsaLookup("family", "yes").limit, 9750);
+assert.strictEqual(hsaLookup("self", "yes").extra, 1000);
+assert.strictEqual(hsaLookup("family", "no").extra, 0);
+assert.strictEqual(hsaLookup("self", "no").minDeductible, 1700);
+assert.strictEqual(hsaLookup("family", "no").minDeductible, 3400);
+assert.strictEqual(hsaLookup("self", "no").maxOop, 8500);
+assert.strictEqual(hsaLookup("family", "no").maxOop, 17000);
+assert.ok(hsaLookup("self", "no").limit !== hsaLookup("self", "no").minDeductible);
+assert.ok(hsaLookup("self", "no").limit !== hsaLookup("self", "no").maxOop);
+
+var hsaUnknown = hsa.lookup({ coverage: "hra", age55: "no" });
+assert.ok(hsaUnknown.error);
+assert.ok(/do not have an official dollar/i.test(hsaUnknown.error));
+assert.ok(hsaUnknown.limit == null);
+
+assert.strictEqual(hsa.HUMAN_LINE, "How much you can put in an HSA this year");
+assert.strictEqual(hsaLookup("self", "no").humanLine, hsa.HUMAN_LINE);
+assert.ok(/not tax advice/i.test(hsaLookup("family", "yes").disclaimer));
+assert.ok(/Publication 969/.test(hsaLookup("self", "yes").extraNote));
+assert.ok(/\$1,000/.test(hsaLookup("self", "yes").extraNote));
+assert.ok(hsaLookup("self", "no").extraNote == null);
+assert.ok(/deductible of at least \$1,700/.test(hsaLookup("self", "no").planNote));
+assert.ok(/cannot go past \$8,500/.test(hsaLookup("self", "no").planNote));
+assert.ok(/deductible of at least \$3,400/.test(hsaLookup("family", "yes").planNote));
+assert.ok(/cannot go past \$17,000/.test(hsaLookup("family", "yes").planNote));
+
+const hsaHtml = fs.readFileSync(path.join(root, "hsa-limits/index.html"), "utf8");
+assert.ok(hsaHtml.includes("Last opened 2026-08-25"));
+assert.ok(hsaHtml.includes("https://www.irs.gov/pub/irs-drop/rp-25-19.pdf"));
+assert.ok(hsaHtml.includes("https://www.irs.gov/irb/2025-21_IRB"));
+assert.ok(hsaHtml.includes("https://www.irs.gov/publications/p969"));
+assert.ok(hsaHtml.includes("$4,400"));
+assert.ok(hsaHtml.includes("$8,750"));
+assert.ok(hsaHtml.includes("$1,700"));
+assert.ok(hsaHtml.includes("$3,400"));
+assert.ok(hsaHtml.includes("$8,500"));
+assert.ok(hsaHtml.includes("$17,000"));
+assert.ok(hsaHtml.includes("$1,000"));
+assert.ok(hsaHtml.includes(hsa.HUMAN_LINE));
+assert.ok(/out\.humanLine/.test(hsaHtml), "result must render the human line");
+assert.ok(/not tax advice/i.test(hsaHtml));
+assertLiveGa4(hsaHtml, "hsa-limits");
+assert.ok(
+  !/\$2,200/.test(hsaHtml),
+  "do not include the excepted-benefit HRA $2,200 as an HSA limit"
+);
+assert.ok(!/G-[A-Z0-9]+/.test(hsaHtml.replace(/G-3SB1LCNKZK/g, "")));
+
+const hsaLabels = [];
+hsaHtml.replace(/<label[^>]*>([\s\S]*?)<\/label>/g, function (_, inner) {
+  hsaLabels.push(inner.replace(/\s+/g, " ").trim());
+  return _;
+});
+assert.ok(hsaLabels.length >= 2, "HSA page needs field labels");
+hsaLabels.forEach(function (lab) {
+  assert.ok(
+    !/^(HDHP|deductible|OOP|catch-up|Rev\. Proc\.)$/i.test(lab),
+    "label must not be jargon-only: " + lab
+  );
+});
+assert.ok(
+  hsaLabels.some(function (l) {
+    return /who is on the health plan/i.test(l);
+  })
+);
+assert.ok(
+  hsaLabels.some(function (l) {
+    return /55 or older this year/i.test(l);
+  })
+);
+assert.ok(/Just you/.test(hsaHtml));
+assert.ok(/You and family/.test(hsaHtml));
+assert.ok(/extra \$1,000/.test(hsaHtml));
+assert.ok(/Publication 969/.test(hsaHtml));
+assert.ok(/plan has to have a yearly deductible/i.test(hsaHtml));
+assert.ok(/not a second contribution limit/i.test(hsaHtml));
+
+assert.ok(homeHtml.includes("./hsa-limits/"));
+assert.ok(
+  homeHtml.includes("How much you can put in an HSA this year (2026)")
+);
+assertNoAds(hsaHtml, "hsa-limits");
 
 console.log("ok");
