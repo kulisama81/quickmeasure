@@ -11,6 +11,7 @@ Public host: [https://sourcedcalc.com](https://sourcedcalc.com). The Cloudflare 
 - `/paint-coverage/` — interior room paint gallons (coverage from official Sherwin-Williams pages)
 - `/concrete-bags/` — rectangular slab premix bags (yields from official Quikrete / Sakrete pages)
 - `/mortgage-limit/` — 2026 county mortgage cap (FHFA all-counties file; 1–4 unit limits as published)
+- `/retirement-limits/` — 2026 401(k) / IRA yearly contribution caps (IRS newsroom + Notice 2025-67)
 
 ## Run locally
 
@@ -74,7 +75,7 @@ Canonicals, `sitemap.xml`, and `robots.txt` hardcode `https://sourcedcalc.com`. 
 
 ## What this site will not do
 
-- Invent rebate dollars, paint coverage, bag yields, or mortgage caps not on the cited official pages
+- Invent rebate dollars, paint coverage, bag yields, mortgage caps, or retirement contribution caps not on the cited official pages
 - Capture leads, show ads, or set a cookie wall
 - Treat ZIP as your utility
 - Budget a federal HARP/HOMES $8,000 figure for Washington in 2026

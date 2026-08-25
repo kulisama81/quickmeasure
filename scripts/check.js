@@ -7,6 +7,7 @@ const paint = require(path.join(root, "paint-coverage/calculator.js"));
 const concrete = require(path.join(root, "concrete-bags/calculator.js"));
 const loan = require(path.join(root, "mortgage-limit/calculator.js"));
 const loanCsv = require(path.join(root, "scripts/loan-limit-csv.js"));
+const retirement = require(path.join(root, "retirement-limits/calculator.js"));
 
 function hasDollar(text, n) {
   return String(text).indexOf("$" + n.toLocaleString("en-US")) !== -1 ||
@@ -273,6 +274,7 @@ assert.ok(sitemap.includes("https://sourcedcalc.com/paint-coverage/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/concrete-bags/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/wa-heat-pump-rebate/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/mortgage-limit/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/retirement-limits/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/</loc>"));
 assert.ok(
   !/pages\.dev/.test(sitemap),
@@ -292,6 +294,10 @@ const htmlPages = [
     "https://sourcedcalc.com/wa-heat-pump-rebate/",
   ],
   ["mortgage-limit/index.html", "https://sourcedcalc.com/mortgage-limit/"],
+  [
+    "retirement-limits/index.html",
+    "https://sourcedcalc.com/retirement-limits/",
+  ],
 ];
 htmlPages.forEach(function (pair) {
   var html = fs.readFileSync(path.join(root, pair[0]), "utf8");
@@ -487,10 +493,183 @@ function assertNoAds(html, name) {
     "wa-heat-pump-rebate",
     fs.readFileSync(path.join(root, "wa-heat-pump-rebate/index.html"), "utf8"),
   ],
+  [
+    "retirement-limits",
+    fs.readFileSync(path.join(root, "retirement-limits/index.html"), "utf8"),
+  ],
 ].forEach(function (pair) {
   assertNoAds(pair[1], pair[0]);
 });
 
 assert.ok(robots.includes("Sitemap: https://sourcedcalc.com/sitemap.xml"));
+
+assert.strictEqual(retirement.YEAR, 2026);
+assert.strictEqual(retirement.WORKPLACE_BASE, 24500);
+assert.strictEqual(retirement.WORKPLACE_CATCHUP_50, 8000);
+assert.strictEqual(retirement.WORKPLACE_CATCHUP_60_63, 11250);
+assert.strictEqual(retirement.IRA_BASE, 7500);
+assert.strictEqual(retirement.IRA_CATCHUP_50, 1100);
+assert.ok(retirement.IRA_CATCHUP_50 !== retirement.WORKPLACE_CATCHUP_50);
+assert.ok(retirement.IRA_CATCHUP_50 !== retirement.WORKPLACE_CATCHUP_60_63);
+
+function ret(account, age, amount) {
+  return retirement.lookup({ account: account, age: age, amount: amount });
+}
+
+assert.strictEqual(ret("workplace", 49).limit, 24500);
+assert.strictEqual(ret("workplace", 50).limit, 32500);
+assert.strictEqual(ret("workplace", 59).limit, 32500);
+assert.strictEqual(ret("workplace", 60).limit, 24500 + 11250);
+assert.strictEqual(ret("workplace", 61).limit, 24500 + 11250);
+assert.strictEqual(ret("workplace", 62).limit, 24500 + 11250);
+assert.strictEqual(ret("workplace", 63).limit, 24500 + 11250);
+assert.strictEqual(ret("workplace", 64).limit, 32500);
+assert.strictEqual(ret("ira", 49).limit, 7500);
+assert.strictEqual(ret("ira", 50).limit, 8600);
+assert.strictEqual(ret("ira", 60).limit, 8600);
+assert.strictEqual(ret("ira", 63).limit, 8600);
+assert.strictEqual(ret("ira", 64).limit, 8600);
+assert.strictEqual(ret("ira", 50).extra, 1100);
+assert.strictEqual(ret("workplace", 50).extra, 8000);
+assert.strictEqual(ret("workplace", 60).extra, 11250);
+assert.ok(ret("ira", 60).limit !== ret("workplace", 60).limit);
+
+function resultCopy(out) {
+  return [
+    out.headline,
+    out.humanLine,
+    out.extraNote,
+    out.comparison,
+    out.disclaimer,
+    out.accountLabel,
+    out.limitLabel,
+  ].join(" ");
+}
+
+[49, 50, 59, 60, 61, 62, 63, 64].forEach(function (age) {
+  var copy = resultCopy(ret("workplace", age));
+  assert.ok(
+    !/\$1,100|\b1100\b/.test(copy),
+    "workplace result must not mention the IRA $1,100 extra (age " + age + ")"
+  );
+  if (age >= 50) {
+    assert.ok(
+      /Workplace 401\(k\) extra at 50 or older is \$8,000/.test(
+        ret("workplace", age).extraNote
+      )
+    );
+    assert.ok(
+      /Those workplace extras are not for an IRA/.test(
+        ret("workplace", age).extraNote
+      )
+    );
+    assert.ok(/\$11,250 instead of \$8,000/.test(ret("workplace", age).extraNote));
+  }
+});
+
+[49, 50, 60, 63, 64].forEach(function (age) {
+  var copy = resultCopy(ret("ira", age));
+  assert.ok(
+    !/\$8,000|\b8000\b/.test(copy),
+    "IRA result must not mention the workplace $8,000 extra (age " + age + ")"
+  );
+  assert.ok(
+    !/\$11,250|\b11250\b/.test(copy),
+    "IRA result must not mention the workplace $11,250 extra (age " + age + ")"
+  );
+  if (age >= 50) {
+    assert.strictEqual(
+      ret("ira", age).extraNote,
+      "IRA extra at 50 or older is $1,100. That is only for an IRA."
+    );
+  }
+});
+
+var retUnder = ret("workplace", 49, 20000);
+assert.strictEqual(retUnder.over, false);
+assert.ok(/under this cap/i.test(retUnder.comparison));
+var retOver = ret("workplace", 49, 25000);
+assert.strictEqual(retOver.over, true);
+assert.ok(/over this cap/i.test(retOver.comparison));
+
+var simplePlan = retirement.lookup({ account: "simple", age: 50 });
+assert.ok(simplePlan.error);
+assert.ok(/do not have an official dollar/i.test(simplePlan.error));
+assert.ok(simplePlan.limit == null);
+
+assert.strictEqual(
+  retirement.HUMAN_LINE,
+  "Under this dollar, you are within the official yearly cap; over it, the IRS does not let you put more in that account this year."
+);
+assert.strictEqual(ret("workplace", 49).humanLine, retirement.HUMAN_LINE);
+assert.ok(/estimate, not tax advice/i.test(ret("ira", 50).disclaimer));
+
+const retHtml = fs.readFileSync(
+  path.join(root, "retirement-limits/index.html"),
+  "utf8"
+);
+assert.ok(retHtml.includes("Last opened 2026-08-25"));
+assert.ok(
+  retHtml.includes(
+    "https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500"
+  )
+);
+assert.ok(retHtml.includes("https://www.irs.gov/pub/irs-drop/n-25-67.pdf"));
+assert.ok(retHtml.includes("$24,500"));
+assert.ok(retHtml.includes("$8,000"));
+assert.ok(retHtml.includes("$11,250"));
+assert.ok(retHtml.includes("$7,500"));
+assert.ok(retHtml.includes("$1,100"));
+assert.ok(retHtml.includes(retirement.HUMAN_LINE));
+assert.ok(/out\.humanLine/.test(retHtml), "result must render the human line");
+assert.ok(/estimate, not tax advice/i.test(retHtml));
+assert.ok(!/G-[A-Z0-9]+/.test(retHtml), "no invented GA4 id");
+assert.ok(!/gtag\(|googletagmanager/i.test(retHtml));
+
+const retLabels = [];
+retHtml.replace(/<label[^>]*>([\s\S]*?)<\/label>/g, function (_, inner) {
+  retLabels.push(inner.replace(/\s+/g, " ").trim());
+  return _;
+});
+assert.ok(retLabels.length >= 3, "retirement page needs field labels");
+retLabels.forEach(function (lab) {
+  assert.ok(
+    !/^(deferral|COLA|SECURE 2\.0)$/i.test(lab),
+    "label must not be jargon-only: " + lab
+  );
+});
+assert.ok(
+  retLabels.some(function (l) {
+    return /which account is this for/i.test(l);
+  })
+);
+assert.ok(
+  retLabels.some(function (l) {
+    return /how old will you be/i.test(l);
+  })
+);
+assert.ok(
+  retLabels.some(function (l) {
+    return /how much do you already plan to put in/i.test(l);
+  })
+);
+assert.ok(
+  /IRA extra at 50 or older is \$1,100\. That is only for an IRA/.test(retHtml)
+);
+assert.ok(
+  /Workplace 401\(k\) extra at 50 or older is \$8,000/.test(retHtml)
+);
+assert.ok(/Ages 60–63 use \$11,250 instead of \$8,000/.test(retHtml));
+assert.ok(/Those workplace extras are not for an IRA/.test(retHtml));
+
+const homeHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
+assert.ok(homeHtml.includes("./retirement-limits/"));
+assert.ok(
+  homeHtml.includes(
+    "How much you can put in a 401(k) or IRA this year (2026)"
+  )
+);
+assertNoAds(homeHtml, "index.html");
+assertNoAds(retHtml, "retirement-limits");
 
 console.log("ok");
