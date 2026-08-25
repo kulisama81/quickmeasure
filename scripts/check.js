@@ -174,6 +174,27 @@ assert.ok(paintHtml.includes("350–400"));
 assert.ok(/typical openings/i.test(paintHtml));
 assert.ok(/not a contractor quote/i.test(paintHtml));
 
+// Issue #4: coverage field must say 350 is the conservative SuperPaint number
+const coverageField = paintHtml.match(
+  /<label for="coverage">([\s\S]*?)<\/label>\s*<span class="hint">([\s\S]*?)<\/span>/
+);
+assert.ok(coverageField, "coverage field must have a label and hint");
+const coverageLabel = coverageField[1].replace(/\s+/g, " ").trim();
+const coverageHint = coverageField[2].replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+const coverageCopy = coverageLabel + " " + coverageHint;
+assert.ok(
+  coverageLabel !== "Coverage (sq ft / gal)",
+  "do not use the vague sq ft / gal-only coverage label"
+);
+assert.ok(/wall/i.test(coverageCopy), "coverage label/hint must say the number is wall area");
+assert.ok(
+  /conservative|low-end|low end/i.test(coverageCopy),
+  "coverage label/hint must say 350 is the conservative/low-end figure"
+);
+assert.ok(/SuperPaint/i.test(coverageCopy), "coverage label/hint must name SuperPaint");
+assert.ok(/350/.test(coverageCopy), "coverage label/hint must mention 350");
+assert.ok(/can/i.test(coverageCopy), "coverage label/hint must say the field can match the can");
+
 const concreteHtml = fs.readFileSync(path.join(root, "concrete-bags/index.html"), "utf8");
 assert.ok(concreteHtml.includes("Last opened 2026-08-24"));
 assert.ok(concreteHtml.includes("<th>Product</th>"));
