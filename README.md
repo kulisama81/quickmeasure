@@ -1,6 +1,8 @@
-# Quick Measure
+# Sourced Calc
 
 Boring home calculators. Static HTML/CSS/JS. No SPA, no npm build, no ads.
+
+Public host: [https://sourcedcalc.com](https://sourcedcalc.com). The Cloudflare Pages project name is still `quickmeasure`. Production `https://quickmeasure-a3q.pages.dev` stays live until Product customer-passes sourcedcalc.com; a follow-up will add that 301.
 
 ## Pages
 
@@ -30,7 +32,7 @@ There is no `npm install` and no build step.
 
 ## Cloudflare Pages
 
-Connect the GitHub repo as a **Pages** project.
+Connect the GitHub repo as a **Pages** project named `quickmeasure`.
 
 - **Build command:** leave empty (this is already the site)
 - **Build output directory / root:** `/` (the repository root is the static root)
@@ -47,11 +49,27 @@ npx wrangler deploy
 npx wrangler pages deploy .
 ```
 
-Project name: `quickmeasure`. Compatibility date: `2026-08-01`.
+Project name: `quickmeasure`. Compatibility date: `2026-08-01`. Public host: `sourcedcalc.com`.
 
-## Custom domain later
+### Custom domain
 
-In the Cloudflare dashboard: **Workers & Pages** → the `quickmeasure` Pages (or Workers) project → **Custom domains** → add your domain. Cloudflare will ask you to add a CNAME (or use their nameservers) so the domain points at the project. No code change is required.
+Apex + www are attached to the existing Pages project (not a new project, not a newly purchased domain).
+
+Wrangler 4.x has **no** `pages domain` command. Add the hostnames with the Pages domains API (same as **Workers & Pages → quickmeasure → Custom domains**):
+
+```bash
+# requires CLOUDFLARE_API_TOKEN with Pages Edit + Zone DNS Edit
+node scripts/attach-custom-domain.js
+```
+
+That script:
+
+1. `POST /accounts/{account_id}/pages/projects/quickmeasure/domains` for `sourcedcalc.com` and `www.sourcedcalc.com`
+2. Creates proxied CNAME records to `quickmeasure-a3q.pages.dev` if they are missing (apex uses Cloudflare CNAME flattening)
+
+Canonicals, `sitemap.xml`, and `robots.txt` hardcode `https://sourcedcalc.com`. This repo has no HTML build, so a `SITE_URL` env var would not rewrite those files.
+
+`functions/_middleware.js` 301s `www.sourcedcalc.com` → `https://sourcedcalc.com` + same path. It does **not** 301 production `quickmeasure-a3q.pages.dev`; that host stays live until Product passes sourcedcalc.com, then a follow-up will add that 301. Preview hosts stay untouched. Pages `_redirects` cannot match on hostname, so a path rule would also fire on the custom domain.
 
 ## What this site will not do
 
