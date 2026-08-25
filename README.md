@@ -2,7 +2,7 @@
 
 Boring home calculators. Static HTML/CSS/JS. No SPA, no npm build, no ads.
 
-Public host: [https://sourcedcalc.com](https://sourcedcalc.com). The Cloudflare Pages project name is still `quickmeasure`. Production `https://quickmeasure-a3q.pages.dev` stays live until Product customer-passes sourcedcalc.com; a follow-up will add that 301.
+Public host: [https://sourcedcalc.com](https://sourcedcalc.com). The Cloudflare Pages project name is still `quickmeasure`. Production `https://quickmeasure-a3q.pages.dev` 301s to the apex (same path and query).
 
 ## Pages
 
@@ -69,7 +69,7 @@ That script:
 
 Canonicals, `sitemap.xml`, and `robots.txt` hardcode `https://sourcedcalc.com`. This repo has no HTML build, so a `SITE_URL` env var would not rewrite those files.
 
-`functions/_middleware.js` 301s `www.sourcedcalc.com` → `https://sourcedcalc.com` + same path. It does **not** 301 production `quickmeasure-a3q.pages.dev`; that host stays live until Product passes sourcedcalc.com, then a follow-up will add that 301. Preview hosts stay untouched. Pages `_redirects` cannot match on hostname, so a path rule would also fire on the custom domain.
+`functions/_middleware.js` 301s `www.sourcedcalc.com` and production `quickmeasure-a3q.pages.dev` → `https://sourcedcalc.com` + same path and query. Preview hosts stay untouched. Pages `_redirects` cannot match on hostname, so a path rule would also fire on the custom domain.
 
 ## What this site will not do
 
