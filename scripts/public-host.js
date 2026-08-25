@@ -4,14 +4,14 @@
  * no build step to interpolate SITE_URL. Keep hosts in sync with
  * functions/_middleware.js.
  *
- * Production quickmeasure-a3q.pages.dev stays live (not in REDIRECT_HOSTS)
- * until Product customer-passes sourcedcalc.com.
+ * Production quickmeasure-a3q.pages.dev 301s to sourcedcalc.com (same path
+ * and query). Preview hosts stay untouched.
  */
 var PUBLIC_HOST = "sourcedcalc.com";
 var PUBLIC_ORIGIN = "https://sourcedcalc.com";
 var PAGES_DEV_HOST = "quickmeasure-a3q.pages.dev";
 var WWW_HOST = "www.sourcedcalc.com";
-var REDIRECT_HOSTS = [WWW_HOST];
+var REDIRECT_HOSTS = [WWW_HOST, PAGES_DEV_HOST];
 
 function canonicalRedirect(urlString) {
   var url = new URL(urlString);

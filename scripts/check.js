@@ -216,14 +216,25 @@ assert.ok(/estimate, not a contractor quote/i.test(concreteHtml));
 
 const host = require(path.join(root, "scripts/public-host.js"));
 assert.strictEqual(host.PUBLIC_ORIGIN, "https://sourcedcalc.com");
-assert.deepStrictEqual(host.REDIRECT_HOSTS, ["www.sourcedcalc.com"]);
+assert.deepStrictEqual(host.REDIRECT_HOSTS, [
+  "www.sourcedcalc.com",
+  "quickmeasure-a3q.pages.dev",
+]);
+assert.strictEqual(
+  host.canonicalRedirect("https://quickmeasure-a3q.pages.dev/"),
+  "https://sourcedcalc.com/"
+);
 assert.strictEqual(
   host.canonicalRedirect("https://quickmeasure-a3q.pages.dev/paint-coverage/?x=1"),
-  null
+  "https://sourcedcalc.com/paint-coverage/?x=1"
 );
 assert.strictEqual(
   host.canonicalRedirect("https://www.sourcedcalc.com/concrete-bags/"),
   "https://sourcedcalc.com/concrete-bags/"
+);
+assert.strictEqual(
+  host.canonicalRedirect("https://www.sourcedcalc.com/paint-coverage/?x=1"),
+  "https://sourcedcalc.com/paint-coverage/?x=1"
 );
 assert.strictEqual(host.canonicalRedirect("https://sourcedcalc.com/"), null);
 assert.strictEqual(
@@ -237,17 +248,20 @@ const middleware = fs.readFileSync(
 );
 assert.ok(middleware.includes('WWW_HOST = "www.sourcedcalc.com"'));
 assert.ok(middleware.includes('PUBLIC_HOST = "sourcedcalc.com"'));
+assert.ok(middleware.includes('PAGES_DEV_HOST = "quickmeasure-a3q.pages.dev"'));
 assert.ok(middleware.includes("Response.redirect"));
 assert.ok(middleware.includes("301"));
 assert.ok(
-  !/PAGES_DEV_HOST\s*=/.test(middleware),
-  "middleware must not treat pages.dev as a redirect host"
+  /PAGES_DEV_HOST\s*=/.test(middleware),
+  "middleware must treat production pages.dev as a redirect host"
 );
 assert.ok(
-  /quickmeasure-a3q\.pages\.dev is intentionally not redirected/.test(
-    middleware
-  ),
-  "middleware should comment that production pages.dev is intentionally not redirected"
+  !/intentionally not redirected/.test(middleware),
+  "middleware must not say production pages.dev is intentionally not redirected"
+);
+assert.ok(
+  /quickmeasure-a3q\.pages\.dev/.test(middleware),
+  "middleware should comment that production pages.dev 301s to the apex"
 );
 assert.ok(
   !fs.existsSync(path.join(root, "_redirects")),
