@@ -174,6 +174,31 @@ assert.ok(paintHtml.includes("350–400"));
 assert.ok(/typical openings/i.test(paintHtml));
 assert.ok(/not a contractor quote/i.test(paintHtml));
 
+// Issue #4: coverage field uses the exact buyer-facing copy (no PDS / mils / SuperPaint jargon)
+const coverageField = paintHtml.match(
+  /<label for="coverage">([\s\S]*?)<\/label>[\s\S]*?<span class="hint after"\s*>([\s\S]*?)<\/span\s*>/
+);
+assert.ok(coverageField, "coverage field must have a label and helper under the box");
+const coverageLabel = coverageField[1].replace(/\s+/g, " ").trim();
+const coverageHint = coverageField[2].replace(/\s+/g, " ").trim();
+assert.strictEqual(coverageLabel, "How far one gallon goes (sq ft)");
+assert.ok(
+  !/\bCoverage\b/.test(coverageLabel),
+  "coverage label must not say Coverage"
+);
+assert.ok(
+  coverageHint ===
+    "How much wall one gallon covers. Leave this at 350 unless your paint can says a different number. 350 is Sherwin-Williams’ official low estimate, so we tell you to buy enough.",
+  "coverage helper must be the exact buyer-facing sentence"
+);
+assert.ok(coverageHint.includes("How much wall one gallon covers"));
+assert.ok(coverageHint.includes("Leave this at 350"));
+assert.ok(coverageHint.includes("Sherwin-Williams’ official low estimate"));
+assert.ok(
+  !/PDS|\bmils\b|conservative SuperPaint|SuperPaint/i.test(coverageHint),
+  "coverage helper must not use PDS, mils, or SuperPaint jargon"
+);
+
 const concreteHtml = fs.readFileSync(path.join(root, "concrete-bags/index.html"), "utf8");
 assert.ok(concreteHtml.includes("Last opened 2026-08-24"));
 assert.ok(concreteHtml.includes("<th>Product</th>"));
