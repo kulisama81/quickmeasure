@@ -214,9 +214,10 @@ assert.ok(/estimate, not a contractor quote/i.test(concreteHtml));
 
 const host = require(path.join(root, "scripts/public-host.js"));
 assert.strictEqual(host.PUBLIC_ORIGIN, "https://sourcedcalc.com");
+assert.deepStrictEqual(host.REDIRECT_HOSTS, ["www.sourcedcalc.com"]);
 assert.strictEqual(
   host.canonicalRedirect("https://quickmeasure-a3q.pages.dev/paint-coverage/?x=1"),
-  "https://sourcedcalc.com/paint-coverage/?x=1"
+  null
 );
 assert.strictEqual(
   host.canonicalRedirect("https://www.sourcedcalc.com/concrete-bags/"),
@@ -232,10 +233,20 @@ const middleware = fs.readFileSync(
   path.join(root, "functions/_middleware.js"),
   "utf8"
 );
-assert.ok(middleware.includes('PAGES_DEV_HOST = "quickmeasure-a3q.pages.dev"'));
+assert.ok(middleware.includes('WWW_HOST = "www.sourcedcalc.com"'));
 assert.ok(middleware.includes('PUBLIC_HOST = "sourcedcalc.com"'));
 assert.ok(middleware.includes("Response.redirect"));
 assert.ok(middleware.includes("301"));
+assert.ok(
+  !/PAGES_DEV_HOST\s*=/.test(middleware),
+  "middleware must not treat pages.dev as a redirect host"
+);
+assert.ok(
+  /quickmeasure-a3q\.pages\.dev is intentionally not redirected/.test(
+    middleware
+  ),
+  "middleware should comment that production pages.dev is intentionally not redirected"
+);
 assert.ok(
   !fs.existsSync(path.join(root, "_redirects")),
   "_redirects cannot match hostname; host 301s belong in Functions middleware"
