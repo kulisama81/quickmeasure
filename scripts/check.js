@@ -5,6 +5,8 @@ const root = path.join(__dirname, "..");
 const wa = require(path.join(root, "wa-heat-pump-rebate/calculator.js"));
 const paint = require(path.join(root, "paint-coverage/calculator.js"));
 const concrete = require(path.join(root, "concrete-bags/calculator.js"));
+const loan = require(path.join(root, "mortgage-limit/calculator.js"));
+const loanCsv = require(path.join(root, "scripts/loan-limit-csv.js"));
 
 function hasDollar(text, n) {
   return String(text).indexOf("$" + n.toLocaleString("en-US")) !== -1 ||
@@ -256,6 +258,7 @@ const sitemap = fs.readFileSync(path.join(root, "sitemap.xml"), "utf8");
 assert.ok(sitemap.includes("https://sourcedcalc.com/paint-coverage/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/concrete-bags/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/wa-heat-pump-rebate/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/mortgage-limit/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/</loc>"));
 assert.ok(
   !/pages\.dev/.test(sitemap),
@@ -274,6 +277,7 @@ const htmlPages = [
     "wa-heat-pump-rebate/index.html",
     "https://sourcedcalc.com/wa-heat-pump-rebate/",
   ],
+  ["mortgage-limit/index.html", "https://sourcedcalc.com/mortgage-limit/"],
 ];
 htmlPages.forEach(function (pair) {
   var html = fs.readFileSync(path.join(root, pair[0]), "utf8");
@@ -296,5 +300,183 @@ assert.ok(notFound.indexOf("Quick Measure") === -1);
 assert.strictEqual(concrete.YIELD[40], 0.3);
 assert.strictEqual(concrete.YIELD[60], 0.45);
 assert.strictEqual(concrete.YIELD[80], 0.6);
+
+const officialCsv = fs.readFileSync(
+  path.join(
+    root,
+    "mortgage-limit",
+    "fullcountyloanlimitlist2026_hera-based_final_flat.csv"
+  ),
+  "utf8"
+);
+const csvCounties = loanCsv.parseOfficialCsv(officialCsv);
+const csvByFips = Object.create(null);
+csvCounties.forEach(function (c) {
+  csvByFips[c.fips] = c;
+});
+
+assert.strictEqual(loan.BASELINE_1_UNIT, 832750);
+assert.strictEqual(loan.CEILING_1_UNIT, 1249125);
+assert.strictEqual(loan.YEAR, 2026);
+assert.strictEqual(loan.countyCount, csvCounties.length);
+assert.ok(csvCounties.length > 3000);
+csvCounties.forEach(function (c) {
+  var baked = loan.lookup({ fips: c.fips, units: 1 });
+  assert.ok(!baked.error, c.fips);
+  assert.strictEqual(baked.limit, c.limits[0]);
+  assert.strictEqual(loan.lookup({ fips: c.fips, units: 2 }).limit, c.limits[1]);
+  assert.strictEqual(loan.lookup({ fips: c.fips, units: 3 }).limit, c.limits[2]);
+  assert.strictEqual(loan.lookup({ fips: c.fips, units: 4 }).limit, c.limits[3]);
+});
+
+function assertCsvLookup(fips, units) {
+  var rec = csvByFips[fips];
+  assert.ok(rec, "CSV must contain " + fips);
+  var out = loan.lookup({ fips: fips, units: units });
+  assert.ok(!out.error, out.error);
+  assert.strictEqual(out.limit, rec.limits[units - 1]);
+  return out;
+}
+
+// Autauga County, AL — nationwide 1-home floor in the official file
+assert.strictEqual(csvByFips["01001"].rawName, "AUTAUGA COUNTY");
+assert.deepStrictEqual(csvByFips["01001"].limits, [
+  832750, 1066250, 1288800, 1601750,
+]);
+[1, 2, 3, 4].forEach(function (u) {
+  assertCsvLookup("01001", u);
+});
+assert.strictEqual(loan.lookup({ fips: "01001", units: 1 }).limit, 832750);
+
+// King County, WA — high-cost, not the ceiling; all 4 unit counts from CSV
+assert.strictEqual(csvByFips["53033"].rawName, "KING COUNTY");
+assert.deepStrictEqual(csvByFips["53033"].limits, [
+  1063750, 1361800, 1646100, 2045700,
+]);
+[1, 2, 3, 4].forEach(function (u) {
+  assertCsvLookup("53033", u);
+});
+assert.strictEqual(loan.lookup({ fips: "53033", units: 1 }).limit, 1063750);
+assert.strictEqual(loan.lookup({ fips: "53033", units: 4 }).limit, 2045700);
+
+// San Francisco County, CA — published 1-home high-cost ceiling
+assert.strictEqual(loan.lookup({ fips: "06075", units: 1 }).limit, 1249125);
+assertCsvLookup("06075", 1);
+assertCsvLookup("06075", 4);
+
+// Never invent a missing county
+var missing = loan.lookup({ fips: "99999", units: 1 });
+assert.ok(missing.error);
+assert.ok(missing.limit == null);
+
+// Optional borrow amount is a comparison only
+var under = loan.lookup({ fips: "01001", units: 1, amount: 800000 });
+assert.strictEqual(under.over, false);
+assert.ok(/under this cap/i.test(under.comparison));
+var overAmt = loan.lookup({ fips: "01001", units: 1, amount: 900000 });
+assert.strictEqual(overAmt.over, true);
+assert.ok(/over this cap/i.test(overAmt.comparison));
+
+assert.strictEqual(
+  loan.HUMAN_LINE,
+  "Under this dollar, a normal mortgage; over it, a harder loan, usually a worse rate."
+);
+assert.strictEqual(
+  loan.lookup({ fips: "01001", units: 1 }).humanLine,
+  loan.HUMAN_LINE
+);
+
+const loanHtml = fs.readFileSync(
+  path.join(root, "mortgage-limit/index.html"),
+  "utf8"
+);
+assert.ok(loanHtml.includes("Last opened 2026-08-24"));
+assert.ok(
+  loanHtml.includes(
+    "https://www.fhfa.gov/news/news-release/fhfa-announces-conforming-loan-limit-values-for-2026"
+  )
+);
+assert.ok(
+  loanHtml.includes(
+    "https://www.fhfa.gov/document/d/cll/fullcountyloanlimitlist2026_hera-based_final_flat.csv"
+  )
+);
+assert.ok(loanHtml.includes("https://www.fhfa.gov/CLL"));
+assert.ok(loanHtml.includes("$832,750"));
+assert.ok(loanHtml.includes("$1,249,125"));
+assert.ok(
+  loanHtml.includes(
+    "Under this dollar, a normal mortgage; over it, a harder loan, usually a worse rate."
+  )
+);
+assert.ok(/out\.humanLine/.test(loanHtml), "result must render the human line");
+assert.ok(/estimate, not a loan quote/i.test(loanHtml));
+
+const loanLabels = [];
+loanHtml.replace(/<label[^>]*>([\s\S]*?)<\/label>/g, function (_, inner) {
+  loanLabels.push(inner.replace(/\s+/g, " ").trim());
+  return _;
+});
+assert.ok(loanLabels.length >= 3, "mortgage page needs field labels");
+loanLabels.forEach(function (lab) {
+  assert.ok(
+    !/^(Conforming|FHFA|Jumbo)(\s+loan\s+limit)?$/i.test(lab),
+    "label must not be jargon-only: " + lab
+  );
+});
+assert.ok(
+  loanLabels.some(function (l) {
+    return /which county is the home in/i.test(l);
+  })
+);
+assert.ok(
+  loanLabels.some(function (l) {
+    return /which state is the home in/i.test(l);
+  })
+);
+assert.ok(
+  loanLabels.some(function (l) {
+    return /how many homes are in the building/i.test(l);
+  })
+);
+assert.ok(
+  loanLabels.some(function (l) {
+    return /how much would you borrow/i.test(l);
+  })
+);
+var amountField = loanHtml.match(
+  /<label for="amount">([\s\S]*?)<\/label>[\s\S]*?<span class="hint after"\s*>([\s\S]*?)<\/span\s*>/
+);
+assert.ok(amountField, "optional borrow field needs a helper under the box");
+var amountHint = amountField[2].replace(/\s+/g, " ").trim();
+assert.strictEqual(
+  amountHint,
+  "Leave this blank to only see the county cap. If you type a dollar amount, we tell you whether it is under or over that cap."
+);
+assert.ok(!/PDS|\bmils\b/.test(amountHint));
+
+function assertNoAds(html, name) {
+  assert.ok(
+    !/adsbygoogle|doubleclick|googlesyndication|carbonads/i.test(html),
+    name
+  );
+  assert.ok(!/type="email"/i.test(html), name + " no email capture");
+  assert.ok(!/\blead form\b|\bget a quote\b/i.test(html), name);
+}
+
+[
+  ["index.html", fs.readFileSync(path.join(root, "index.html"), "utf8")],
+  ["mortgage-limit", loanHtml],
+  ["paint-coverage", paintHtml],
+  ["concrete-bags", concreteHtml],
+  [
+    "wa-heat-pump-rebate",
+    fs.readFileSync(path.join(root, "wa-heat-pump-rebate/index.html"), "utf8"),
+  ],
+].forEach(function (pair) {
+  assertNoAds(pair[1], pair[0]);
+});
+
+assert.ok(robots.includes("Sitemap: https://sourcedcalc.com/sitemap.xml"));
 
 console.log("ok");

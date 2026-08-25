@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f6b4a" />
+    <title>How big a normal mortgage can be (2026) · Sourced Calc</title>
+    <meta
+      name="description"
+      content="Look up the official 2026 county cap for a normal mortgage. Under that dollar, a normal mortgage. Over it, a harder loan, usually a worse rate. Estimate, not a quote."
+    />
+    <link rel="canonical" href="https://sourcedcalc.com/mortgage-limit/" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <!-- Analytics: none. No cookies, no trackers. -->
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">Sourced Calc</a>
+        <span class="tagline">boring home calculators</span>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <h1>How big a normal mortgage can be (2026)</h1>
+      <p class="lede">
+        Pick the county the home is in. We look up the official dollar cap for
+        a regular mortgage there. Estimate, not a quote.
+      </p>
+
+      <form class="card" id="form" novalidate>
+        <p class="note">
+          County and how many homes in the building are required. Borrowing
+          amount is optional.
+        </p>
+        <div class="field">
+          <label for="state">Which state is the home in?</label>
+          <select id="state" name="state" required>
+            <option value="">Choose...</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="county">Which county is the home in?</label>
+          <select id="county" name="county" required disabled>
+            <option value="">Choose a state first</option>
+          </select>
+          <span class="hint after"
+            >The cap is set by county, not by ZIP. If you live in a city that
+            is its own county, pick that city.</span
+          >
+        </div>
+        <div class="field">
+          <label for="units">How many homes are in the building?</label>
+          <select id="units" name="units" required>
+            <option value="1" selected>1 — a regular house</option>
+            <option value="2">2 — a duplex</option>
+            <option value="3">3 homes</option>
+            <option value="4">4 homes</option>
+          </select>
+          <span class="hint after"
+            >A regular house is 1. A duplex is 2. The official list posts a
+            different dollar for 1, 2, 3, or 4 homes.</span
+          >
+        </div>
+        <div class="field">
+          <label for="amount">How much would you borrow? (optional)</label>
+          <input
+            id="amount"
+            name="amount"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="1"
+            placeholder="e.g. 800000"
+          />
+          <span class="hint after"
+            >Leave this blank to only see the county cap. If you type a dollar
+            amount, we tell you whether it is under or over that cap.</span
+          >
+        </div>
+        <button class="btn" type="submit">Look up the cap</button>
+        <p class="disclaimer" id="form-error" hidden></p>
+      </form>
+
+      <section class="result hidden" id="result" aria-live="polite"></section>
+
+      <section class="sources">
+        <h2>Sources</h2>
+        <p class="note">
+          Dollars on this page come only from these official links.
+          Last opened 2026-08-24. If a county or unit count is not on the
+          all-counties file, it is not on this calculator.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>What we use</th>
+                <th>Official page</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>FHFA 2026 news release</td>
+                <td>
+                  Nationwide 1-home floor $832,750. High-cost 1-home ceiling
+                  $1,249,125.
+                </td>
+                <td>
+                  <a
+                    href="https://www.fhfa.gov/news/news-release/fhfa-announces-conforming-loan-limit-values-for-2026"
+                    >FHFA announces 2026 loan limit values</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>FHFA all-counties file (2026)</td>
+                <td>County 1–4 home dollar caps, as published</td>
+                <td>
+                  <a
+                    href="https://www.fhfa.gov/document/d/cll/fullcountyloanlimitlist2026_hera-based_final_flat.csv"
+                    >fullcountyloanlimitlist2026_hera-based_final_flat.csv</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>FHFA conforming loan limit page</td>
+                <td>Same 2026 files listed</td>
+                <td>
+                  <a href="https://www.fhfa.gov/CLL">fhfa.gov/CLL</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="assumptions card" style="margin-top: 1.25rem">
+        <h2>What this number is</h2>
+        <ul>
+          <li>
+            Under this dollar, a normal mortgage; over it, a harder loan, usually a worse rate.
+          </li>
+          <li>
+            The nationwide floor for a 1-home building in 2026 is
+            <strong>$832,750</strong>. Some costly counties are higher, up to
+            the published ceiling of <strong>$1,249,125</strong> for a 1-home
+            building. A few listed areas are higher still — we use the county
+            row from the file, never a made-up extra.
+          </li>
+          <li>
+            2-, 3-, and 4-home buildings have their own published dollars on
+            the same county row. We do not scale the 1-home figure ourselves.
+          </li>
+        </ul>
+        <p class="disclaimer">
+          This is an estimate, not a loan quote, rate, or approval. Lenders
+          still check credit, income, and the home.
+        </p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <nav aria-label="Calculators">
+        <a href="../index.html">Home</a>
+        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>
+        <a href="../paint-coverage/">Paint</a>
+        <a href="../concrete-bags/">Concrete</a>
+      </nav>
+      <p>Sourced Calc · boring home calculators · not a contractor</p>
+    </footer>
+    <script src="./counties.js"></script>
+    <script src="./calculator.js"></script>
+    <script>
+      (function () {
+        var form = document.getElementById("form");
+        var resultEl = document.getElementById("result");
+        var formError = document.getElementById("form-error");
+        var stateEl = document.getElementById("state");
+        var countyEl = document.getElementById("county");
+        var api = window.qmLoanLimit;
+
+        function esc(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        api.states().forEach(function (st) {
+          var opt = document.createElement("option");
+          opt.value = st.code;
+          opt.textContent = st.name;
+          stateEl.appendChild(opt);
+        });
+
+        function fillCounties(state) {
+          countyEl.innerHTML = "";
+          var placeholder = document.createElement("option");
+          if (!state) {
+            placeholder.value = "";
+            placeholder.textContent = "Choose a state first";
+            countyEl.appendChild(placeholder);
+            countyEl.disabled = true;
+            return;
+          }
+          placeholder.value = "";
+          placeholder.textContent = "Choose...";
+          countyEl.appendChild(placeholder);
+          api.countiesIn(state).forEach(function (c) {
+            var opt = document.createElement("option");
+            opt.value = c.fips;
+            opt.textContent = c.name;
+            countyEl.appendChild(opt);
+          });
+          countyEl.disabled = false;
+        }
+
+        stateEl.addEventListener("change", function () {
+          fillCounties(stateEl.value);
+        });
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          formError.hidden = true;
+          var out = api.lookup({
+            fips: countyEl.value,
+            units: document.getElementById("units").value,
+            amount: document.getElementById("amount").value,
+          });
+          if (out.error) {
+            formError.hidden = false;
+            formError.textContent = out.error;
+            resultEl.classList.add("hidden");
+            return;
+          }
+          var html =
+            '<span class="pill public">Estimate</span>' +
+            "<h2 class='nums'>" +
+            esc(out.headline) +
+            "</h2>" +
+            '<p class="callout">' +
+            esc(out.humanLine) +
+            "</p>" +
+            "<ul>" +
+            "<li>County: " +
+            esc(out.county) +
+            ", " +
+            esc(out.stateName) +
+            "</li>" +
+            "<li>Building: " +
+            esc(out.unitsLabel) +
+            "</li>" +
+            "<li>Official cap: <strong class='nums'>" +
+            esc(out.limitLabel) +
+            "</strong></li>";
+          if (out.comparison) {
+            html += "<li>" + esc(out.comparison) + "</li>";
+          }
+          html +=
+            "</ul>" +
+            '<p class="disclaimer">' +
+            esc(out.disclaimer) +
+            "</p>";
+          resultEl.innerHTML = html;
+          resultEl.classList.remove("hidden");
+          resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      })();
+    </script>
+  </body>
+</html>
