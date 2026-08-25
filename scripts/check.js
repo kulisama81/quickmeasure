@@ -794,8 +794,7 @@ assert.ok(mileHtml.includes("23.5"));
 assert.ok(mileHtml.includes(mileage.HUMAN_LINE));
 assert.ok(/out\.humanLine/.test(mileHtml), "result must render the human line");
 assert.ok(/estimate, not tax advice/i.test(mileHtml));
-assert.ok(!/G-[A-Z0-9]+/.test(mileHtml), "no invented GA4 id");
-assert.ok(!/gtag\(|googletagmanager/i.test(mileHtml));
+assertLiveGa4(mileHtml, "mileage");
 assert.ok(/military only/i.test(mileHtml));
 assert.ok(!/2025 mileage|70¢ a mile for 2025/i.test(mileHtml));
 
