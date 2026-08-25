@@ -1,8 +1,14 @@
 /**
  * Interior rectangular-room paint gallons.
  * Walls only: 2 × (L + W) × H, minus typical door/window rectangles.
+ *
+ * Coverage default is within Sherwin-Williams SuperPaint PDS 350–400 sq ft/gal
+ * at 4 mils wet. Door/window sizes are typical openings, not manufacturer coverage.
  */
 (function (root) {
+  // Within SuperPaint PDS 350–400 sq ft/gal at 4 mils wet (see /paint-coverage/ sources).
+  var DEFAULT_COVERAGE = 350;
+  // Typical openings — not manufacturer coverage.
   var DOOR_SQFT = 20; // 3 ft × 6 ft 8 in interior door
   var WINDOW_SQFT = 15; // 3 ft × 5 ft typical window opening
 
@@ -14,6 +20,9 @@
     var windows = Number(input.windows);
     var coats = Number(input.coats);
     var coverage = Number(input.coverage);
+    if (!(coverage > 0) && input.coverage == null) {
+      coverage = DEFAULT_COVERAGE;
+    }
 
     if (
       !(length > 0) ||
@@ -52,7 +61,12 @@
     };
   }
 
-  root.qmPaint = { calc: calc, DOOR_SQFT: DOOR_SQFT, WINDOW_SQFT: WINDOW_SQFT };
+  root.qmPaint = {
+    calc: calc,
+    DEFAULT_COVERAGE: DEFAULT_COVERAGE,
+    DOOR_SQFT: DOOR_SQFT,
+    WINDOW_SQFT: WINDOW_SQFT,
+  };
 })(typeof window !== "undefined" ? window : globalThis);
 
 if (typeof module !== "undefined" && module.exports) {
