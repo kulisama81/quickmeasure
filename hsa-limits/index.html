@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f6b4a" />
+    <title>How much you can put in an HSA this year (2026) · Sourced Calc</title>
+    <meta
+      name="description"
+      content="Look up the official 2026 yearly cap for a health savings account. Just you or you and family, plus $1,000 if you are 55 or older. Not tax advice."
+    />
+    <link rel="canonical" href="https://sourcedcalc.com/hsa-limits/" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3SB1LCNKZK"></script>
+    <script src="../ga.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">Sourced Calc</a>
+        <span class="tagline">boring home calculators</span>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <h1>How much you can put in an HSA this year (2026)</h1>
+      <p class="lede">
+        Pick who is on the health plan and whether you are 55 or older this
+        year. We look up the official yearly dollar. Not tax advice.
+      </p>
+
+      <form class="card" id="form" novalidate>
+        <p class="note">
+          Who is on the plan and whether you are 55 or older are required.
+        </p>
+        <div class="field">
+          <label for="coverage">Who is on the health plan?</label>
+          <select id="coverage" name="coverage" required>
+            <option value="">Choose...</option>
+            <option value="self">Just you</option>
+            <option value="family">You and family</option>
+          </select>
+          <span class="hint after"
+            >Just you means only you are covered (the IRS calls this self-only).
+            You and family means a spouse or dependents are on the same plan
+            (the IRS calls this family). Those are the two official yearly
+            caps.</span
+          >
+        </div>
+        <div class="field">
+          <label for="age55">Are you 55 or older this year?</label>
+          <select id="age55" name="age55" required>
+            <option value="">Choose...</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+          <span class="hint after"
+            >If you are 55 or older at the end of the year, the IRS lets you put
+            in an extra $1,000. That extra is from IRS Publication 969.</span
+          >
+        </div>
+        <button class="btn" type="submit">Look up the limit</button>
+        <p class="disclaimer" id="form-error" hidden></p>
+      </form>
+
+      <section class="result hidden" id="result" aria-live="polite"></section>
+
+      <section class="sources">
+        <h2>Sources</h2>
+        <p class="note">
+          Dollars on this page come only from these official links.
+          Last opened 2026-08-25. If a case is not on those pages, we do not
+          invent a dollar.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>What we use</th>
+                <th>Official page</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Rev. Proc. 2025-19 (PDF)</td>
+                <td>
+                  2026 yearly HSA cap $4,400 just you, $8,750 you and family.
+                  The plan has to have a yearly deductible of at least $1,700
+                  just you / $3,400 you and family. Yearly out-of-pocket costs
+                  (not premiums) cannot go past $8,500 just you / $17,000 you
+                  and family.
+                </td>
+                <td>
+                  <a href="https://www.irs.gov/pub/irs-drop/rp-25-19.pdf"
+                    >Rev. Proc. 2025-19 (PDF)</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>IRB 2025-21 (Rev. Proc. 2025-19)</td>
+                <td>Same 2026 HSA dollars as published in Rev. Proc. 2025-19</td>
+                <td>
+                  <a href="https://www.irs.gov/irb/2025-21_IRB"
+                    >2025-21 Internal Revenue Bulletin</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>IRS Publication 969</td>
+                <td>
+                  An eligible person age 55 or older at year-end may add
+                  $1,000. The example on that page uses 2025 ($4,300 + $1,000 =
+                  $5,300). For 2026 the same extra $1,000 applies on top of
+                  $4,400 / $8,750.
+                </td>
+                <td>
+                  <a href="https://www.irs.gov/publications/p969"
+                    >Publication 969</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="assumptions card" style="margin-top: 1.25rem">
+        <h2>What this number is</h2>
+        <ul>
+          <li>
+            This is how much you can put in an HSA this year.
+          </li>
+          <li>
+            Just you is <strong>$4,400</strong>. You and family is
+            <strong>$8,750</strong>. Those are the official 2026 yearly caps.
+          </li>
+          <li>
+            If you are 55 or older at the end of the year, you may add
+            <strong>$1,000</strong>. That extra is from IRS Publication 969.
+            The example there uses 2025 ($4,300 + $1,000 = $5,300). For 2026
+            the extra is the same $1,000 on top of $4,400 or $8,750.
+          </li>
+          <li>
+            To use an HSA, the health plan has to have a yearly deductible of
+            at least <strong>$1,700</strong> (just you) or
+            <strong>$3,400</strong> (you and family). Yearly out-of-pocket
+            costs — deductibles, copays, and other amounts, not premiums —
+            cannot go past <strong>$8,500</strong> (just you) or
+            <strong>$17,000</strong> (you and family). Those are the plan
+            rules that have to be true, not a second contribution limit.
+          </li>
+          <li>
+            We do not have official dollars here for mid-year coverage
+            changes, more than one HSA, or a different kind of HRA listed in
+            the same IRS document.
+          </li>
+        </ul>
+        <p class="disclaimer">This is not tax advice.</p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <nav aria-label="Calculators">
+        <a href="../index.html">Home</a>
+        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>
+        <a href="../paint-coverage/">Paint</a>
+        <a href="../concrete-bags/">Concrete</a>
+        <a href="../mortgage-limit/">Mortgage cap</a>
+        <a href="../retirement-limits/">401(k) / IRA</a>
+        <a href="../mileage/">Mileage</a>
+      </nav>
+      <p>Sourced Calc · boring home calculators · not a contractor</p>
+    </footer>
+    <script src="./calculator.js"></script>
+    <script>
+      (function () {
+        var form = document.getElementById("form");
+        var resultEl = document.getElementById("result");
+        var formError = document.getElementById("form-error");
+        var api = window.qmHsa;
+
+        function esc(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          formError.hidden = true;
+          var out = api.lookup({
+            coverage: document.getElementById("coverage").value,
+            age55: document.getElementById("age55").value,
+          });
+          if (out.error) {
+            formError.hidden = false;
+            formError.textContent = out.error;
+            resultEl.classList.add("hidden");
+            return;
+          }
+          var html =
+            '<span class="pill public">Official limit</span>' +
+            "<h2 class='nums'>" +
+            esc(out.headline) +
+            "</h2>" +
+            '<p class="callout">' +
+            esc(out.humanLine) +
+            "</p>" +
+            "<ul>" +
+            "<li>Who is on the plan: " +
+            esc(out.coverageLabel) +
+            "</li>" +
+            "<li>Age 55 or older this year: " +
+            esc(out.age55 ? "Yes" : "No") +
+            "</li>" +
+            "<li>Official yearly cap: <strong class='nums'>" +
+            esc(out.limitLabel) +
+            "</strong></li>";
+          if (out.extra) {
+            html +=
+              "<li>" +
+              esc(api.formatDollar(out.base)) +
+              " plus extra " +
+              esc(api.formatDollar(out.extra)) +
+              " = " +
+              esc(out.limitLabel) +
+              "</li>";
+          }
+          if (out.extraNote) {
+            html += "<li>" + esc(out.extraNote) + "</li>";
+          }
+          html +=
+            "<li>" +
+            esc(out.planNote) +
+            "</li>" +
+            "</ul>" +
+            '<p class="disclaimer">' +
+            esc(out.disclaimer) +
+            "</p>";
+          resultEl.innerHTML = html;
+          resultEl.classList.remove("hidden");
+          resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      })();
+    </script>
+  </body>
+</html>

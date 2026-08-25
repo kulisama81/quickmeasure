@@ -13,6 +13,7 @@ Public host: [https://sourcedcalc.com](https://sourcedcalc.com). The Cloudflare 
 - `/mortgage-limit/` — 2026 county mortgage cap (FHFA all-counties file; 1–4 unit limits as published)
 - `/retirement-limits/` — 2026 401(k) / IRA yearly contribution caps (IRS newsroom + Notice 2025-67)
 - `/mileage/` — 2026 IRS standard mileage rates (IRS table + Notice 2026-10 + mid-year revision)
+- `/hsa-limits/` — 2026 HSA yearly contribution limits (Rev. Proc. 2025-19 + Pub 969 age-55 extra)
 
 ## Run locally
 
@@ -76,7 +77,7 @@ Canonicals, `sitemap.xml`, and `robots.txt` hardcode `https://sourcedcalc.com`. 
 
 ## What this site will not do
 
-- Invent rebate dollars, paint coverage, bag yields, mortgage caps, retirement contribution caps, or mileage cents not on the cited official pages
+- Invent rebate dollars, paint coverage, bag yields, mortgage caps, retirement contribution caps, mileage cents, or HSA contribution limits not on the cited official pages
 - Capture leads, show ads, or set a cookie wall
 - Treat ZIP as your utility
 - Budget a federal HARP/HOMES $8,000 figure for Washington in 2026
