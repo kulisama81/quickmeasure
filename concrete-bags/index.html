@@ -206,7 +206,10 @@
             fmt(out.cuFt, 2) +
             " cu&nbsp;ft</li>" +
             "<li>Published yield used: " +
-            fmt(out.perBag, 2) +
+            Number(out.perBag).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }) +
             " cu&nbsp;ft per bag</li>" +
             "<li>Raw bags: <strong>" +
             fmt(out.raw, 2) +
