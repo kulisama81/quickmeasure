@@ -105,29 +105,12 @@
     }
 
     var extraNote = null;
-    if (kind === "workplace" && extra === WORKPLACE_CATCHUP_60_63) {
+    if (kind === "workplace" && extra > 0) {
       extraNote =
-        "That is " +
-        formatDollar(WORKPLACE_BASE) +
-        " plus " +
-        formatDollar(WORKPLACE_CATCHUP_60_63) +
-        " extra for ages 60, 61, 62, or 63 (instead of the usual " +
-        formatDollar(WORKPLACE_CATCHUP_50) +
-        " extra).";
-    } else if (kind === "workplace" && extra === WORKPLACE_CATCHUP_50) {
-      extraNote =
-        "That is " +
-        formatDollar(WORKPLACE_BASE) +
-        " plus " +
-        formatDollar(WORKPLACE_CATCHUP_50) +
-        " extra for age 50 or older.";
+        "Workplace 401(k) extra at 50 or older is $8,000. Ages 60–63 use $11,250 instead of $8,000. Those workplace extras are not for an IRA.";
     } else if (kind === "ira" && extra === IRA_CATCHUP_50) {
       extraNote =
-        "That is " +
-        formatDollar(IRA_BASE) +
-        " plus " +
-        formatDollar(IRA_CATCHUP_50) +
-        " extra for age 50 or older. The workplace-plan extra does not apply to an IRA.";
+        "IRA extra at 50 or older is $1,100. That is only for an IRA.";
     }
 
     return {

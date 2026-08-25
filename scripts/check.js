@@ -534,6 +534,57 @@ assert.strictEqual(ret("workplace", 50).extra, 8000);
 assert.strictEqual(ret("workplace", 60).extra, 11250);
 assert.ok(ret("ira", 60).limit !== ret("workplace", 60).limit);
 
+function resultCopy(out) {
+  return [
+    out.headline,
+    out.humanLine,
+    out.extraNote,
+    out.comparison,
+    out.disclaimer,
+    out.accountLabel,
+    out.limitLabel,
+  ].join(" ");
+}
+
+[49, 50, 59, 60, 61, 62, 63, 64].forEach(function (age) {
+  var copy = resultCopy(ret("workplace", age));
+  assert.ok(
+    !/\$1,100|\b1100\b/.test(copy),
+    "workplace result must not mention the IRA $1,100 extra (age " + age + ")"
+  );
+  if (age >= 50) {
+    assert.ok(
+      /Workplace 401\(k\) extra at 50 or older is \$8,000/.test(
+        ret("workplace", age).extraNote
+      )
+    );
+    assert.ok(
+      /Those workplace extras are not for an IRA/.test(
+        ret("workplace", age).extraNote
+      )
+    );
+    assert.ok(/\$11,250 instead of \$8,000/.test(ret("workplace", age).extraNote));
+  }
+});
+
+[49, 50, 60, 63, 64].forEach(function (age) {
+  var copy = resultCopy(ret("ira", age));
+  assert.ok(
+    !/\$8,000|\b8000\b/.test(copy),
+    "IRA result must not mention the workplace $8,000 extra (age " + age + ")"
+  );
+  assert.ok(
+    !/\$11,250|\b11250\b/.test(copy),
+    "IRA result must not mention the workplace $11,250 extra (age " + age + ")"
+  );
+  if (age >= 50) {
+    assert.strictEqual(
+      ret("ira", age).extraNote,
+      "IRA extra at 50 or older is $1,100. That is only for an IRA."
+    );
+  }
+});
+
 var retUnder = ret("workplace", 49, 20000);
 assert.strictEqual(retUnder.over, false);
 assert.ok(/under this cap/i.test(retUnder.comparison));
@@ -602,6 +653,14 @@ assert.ok(
     return /how much do you already plan to put in/i.test(l);
   })
 );
+assert.ok(
+  /IRA extra at 50 or older is \$1,100\. That is only for an IRA/.test(retHtml)
+);
+assert.ok(
+  /Workplace 401\(k\) extra at 50 or older is \$8,000/.test(retHtml)
+);
+assert.ok(/Ages 60–63 use \$11,250 instead of \$8,000/.test(retHtml));
+assert.ok(/Those workplace extras are not for an IRA/.test(retHtml));
 
 const homeHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
 assert.ok(homeHtml.includes("./retirement-limits/"));
