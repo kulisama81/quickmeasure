@@ -33,7 +33,7 @@ npx --yes serve .
 
 Then open the URL it prints (usually `http://localhost:3000`).
 
-There is no `npm install` and no build step.
+There is no site build step. `package.json` pins wrangler for deploys only.
 
 ## Cloudflare Pages
 
@@ -46,12 +46,12 @@ Pages will serve `index.html` at `/`, `wa-heat-pump-rebate/index.html` at `/wa-h
 
 ### Wrangler
 
-`wrangler.jsonc` points Workers static assets at this directory (`assets.directory: "."`).
+`wrangler.jsonc` points Workers static assets at this directory (`assets.directory: "."`). Wrangler is pinned at **4.126.0** in `package.json` (exact, no caret). After `npm ci`, `npx wrangler` uses that local pin.
 
 ```bash
-npx wrangler deploy
-# or
-npx wrangler pages deploy .
+npm ci
+npm run pages:deploy
+# same as: npx wrangler pages deploy .
 ```
 
 Project name: `quickmeasure`. Compatibility date: `2026-08-01`. Public host: `sourcedcalc.com`.
