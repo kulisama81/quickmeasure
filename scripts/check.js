@@ -234,6 +234,14 @@ assert.strictEqual(
   "https://sourcedcalc.com/paint-coverage/?x=1"
 );
 assert.strictEqual(
+  host.canonicalRedirect("https://quickmeasure-a3q.pages.dev/tax-brackets/"),
+  "https://sourcedcalc.com/tax-brackets/"
+);
+assert.strictEqual(
+  host.canonicalRedirect("https://quickmeasure-a3q.pages.dev/tax-brackets/?x=1"),
+  "https://sourcedcalc.com/tax-brackets/?x=1"
+);
+assert.strictEqual(
   host.canonicalRedirect("https://www.sourcedcalc.com/concrete-bags/"),
   "https://sourcedcalc.com/concrete-bags/"
 );
@@ -271,6 +279,61 @@ assert.ok(
 assert.ok(
   !fs.existsSync(path.join(root, "_redirects")),
   "_redirects cannot match hostname; host 301s belong in Functions middleware"
+);
+
+const worker = fs.readFileSync(path.join(root, "_worker.js"), "utf8");
+assert.ok(worker.includes('WWW_HOST = "www.sourcedcalc.com"'));
+assert.ok(worker.includes('PUBLIC_HOST = "sourcedcalc.com"'));
+assert.ok(worker.includes('PAGES_DEV_HOST = "quickmeasure-a3q.pages.dev"'));
+assert.ok(worker.includes("Response.redirect"));
+assert.ok(worker.includes("301"));
+assert.ok(
+  /PAGES_DEV_HOST\s*=/.test(worker),
+  "_worker.js must treat production pages.dev as a redirect host"
+);
+assert.ok(
+  /export default/.test(worker),
+  "Pages Advanced Mode _worker.js needs a default fetch export"
+);
+assert.ok(
+  /ASSETS\.fetch/.test(worker),
+  "_worker.js must pass non-redirect hosts through to static assets"
+);
+
+const wrangler = fs.readFileSync(path.join(root, "wrangler.jsonc"), "utf8");
+assert.ok(
+  /"pages_build_output_dir"\s*:\s*"\."/.test(wrangler),
+  "wrangler.jsonc must be a Pages project so _worker.js and functions/ compile"
+);
+assert.ok(
+  !/"assets"\s*:/.test(wrangler),
+  "assets-only wrangler.jsonc serves pages.dev at 200 and skips host 301s"
+);
+
+const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+assert.strictEqual(
+  pkg.devDependencies.wrangler,
+  "4.126.0",
+  "do not loosen the wrangler pin"
+);
+assert.strictEqual(pkg.scripts["pages:deploy"], "wrangler pages deploy .");
+assert.ok(
+  fs.readFileSync(path.join(root, ".npmrc"), "utf8").includes("ignore-scripts=true")
+);
+
+const { execFileSync } = require("child_process");
+execFileSync(
+  process.execPath,
+  [
+    "--input-type=module",
+    "-e",
+    'import w from "./_worker.js";' +
+      "const env={ASSETS:{fetch:async()=>new Response(\"ok\")}};" +
+      'const r=await w.fetch(new Request("https://quickmeasure-a3q.pages.dev/tax-brackets/"),env);' +
+      "if(r.status!==301) throw new Error(String(r.status));" +
+      'if(r.headers.get("location")!=="https://sourcedcalc.com/tax-brackets/") throw new Error(r.headers.get("location"));',
+  ],
+  { cwd: root }
 );
 
 const sitemap = fs.readFileSync(path.join(root, "sitemap.xml"), "utf8");
