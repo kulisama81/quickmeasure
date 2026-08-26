@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f6b4a" />
+    <title>
+      How much the IRS lets most people subtract before tax (2026) · Sourced
+      Calc
+    </title>
+    <meta
+      name="description"
+      content="Look up the official 2026 IRS amount most people subtract before tax instead of listing every deduction. Extra if you are 65 or older or blind. Official figure lookup, not tax advice."
+    />
+    <link rel="canonical" href="https://sourcedcalc.com/standard-deduction/" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3SB1LCNKZK"></script>
+    <script src="../ga.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">Sourced Calc</a>
+        <span class="tagline">boring home calculators</span>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <h1>How much the IRS lets most people subtract before tax (2026)</h1>
+      <p class="lede">
+        Pick how you file and whether you are 65 or older or blind. We look up
+        the official dollar. Official figure lookup, not tax advice.
+      </p>
+
+      <form class="card" id="form" novalidate>
+        <p class="note">
+          How you file, age 65 or older, blind, and whether someone else can
+          claim you are required.
+        </p>
+        <div class="field">
+          <label for="status">How do you file this year?</label>
+          <select id="status" name="status" required>
+            <option value="">Choose...</option>
+            <option value="single">Just you</option>
+            <option value="mfj">You and a spouse together</option>
+            <option value="mfs">Married, filing your own return</option>
+            <option value="hoh">Head of household</option>
+            <option value="ss">Surviving spouse</option>
+          </select>
+          <span class="hint after"
+            >Just you is what the IRS calls single. You and a spouse together
+            is married filing jointly. Married, filing your own return is
+            married filing separately. Head of household and surviving spouse
+            use those IRS names. Surviving spouse is a widow or widower who
+            can use the same amount as a married couple filing together.</span
+          >
+        </div>
+        <div class="field">
+          <label for="age65">Are you 65 or older this year?</label>
+          <select id="age65" name="age65" required>
+            <option value="">Choose...</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+          <span class="hint after"
+            >If you are 65 or older, the IRS adds an extra amount. That extra
+            is $1,650, or $2,050 if you are unmarried and not a surviving
+            spouse.</span
+          >
+        </div>
+        <div class="field">
+          <label for="blind">Are you blind?</label>
+          <select id="blind" name="blind" required>
+            <option value="">Choose...</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+          <span class="hint after"
+            >Being blind adds the same extra as being 65 or older. Age and
+            blind can both apply.</span
+          >
+        </div>
+        <div id="spouse-fields" class="hidden">
+          <div class="field">
+            <label for="spouseAge65"
+              >Is your spouse 65 or older this year?</label
+            >
+            <select id="spouseAge65" name="spouseAge65">
+              <option value="">Choose...</option>
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+            <span class="hint after"
+              >If you file together, each of you can get the extra for being
+              65 or older.</span
+            >
+          </div>
+          <div class="field">
+            <label for="spouseBlind">Is your spouse blind?</label>
+            <select id="spouseBlind" name="spouseBlind">
+              <option value="">Choose...</option>
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+            <span class="hint after"
+              >If you file together, each of you can get the extra for being
+              blind. Age and blind can both apply for each of you.</span
+            >
+          </div>
+        </div>
+        <div class="field">
+          <label for="dependent"
+            >Can someone else claim you as a dependent?</label
+          >
+          <select id="dependent" name="dependent" required>
+            <option value="">Choose...</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+          <span class="hint after"
+            >If someone else can claim you, the IRS limits this starting
+            amount to the greater of $1,350 or $450 plus what you earned from
+            work.</span
+          >
+        </div>
+        <div class="field hidden" id="earned-field">
+          <label for="earned">How much did you earn from work this year?</label>
+          <input
+            id="earned"
+            name="earned"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="1"
+            placeholder="e.g. 4000"
+          />
+          <span class="hint after"
+            >Wages or self-employment. Type 0 if you did not earn from work.
+            This is only used for the dependent limit. It is not the same as
+            all of your income.</span
+          >
+        </div>
+        <button class="btn" type="submit">Look up the amount</button>
+        <p class="disclaimer" id="form-error" hidden></p>
+      </form>
+
+      <section class="result hidden" id="result" aria-live="polite"></section>
+
+      <section class="sources">
+        <h2>Sources</h2>
+        <p class="note">
+          Dollars on this page come only from these official links.
+          Last opened 2026-08-25. If a case is not on those pages, we do not
+          invent a dollar.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>What we use</th>
+                <th>Official page</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>IRS 2026 inflation newsroom post</td>
+                <td>
+                  2026 amount $16,100 just you or married filing your own
+                  return; $32,200 you and a spouse together or surviving
+                  spouse; $24,150 head of household.
+                </td>
+                <td>
+                  <a
+                    href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill"
+                    >IRS releases tax inflation adjustments for tax year
+                    2026</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>Rev. Proc. 2025-32 (PDF)</td>
+                <td>
+                  Same 2026 amounts. If someone else can claim you, the
+                  starting amount cannot go past the greater of $1,350 or $450
+                  plus what you earned. Extra if 65 or older or blind: $1,650,
+                  or $2,050 if unmarried and not a surviving spouse.
+                </td>
+                <td>
+                  <a href="https://www.irs.gov/pub/irs-drop/rp-25-32.pdf"
+                    >Rev. Proc. 2025-32 (PDF)</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="assumptions card" style="margin-top: 1.25rem">
+        <h2>What this number is</h2>
+        <ul>
+          <li>
+            This is the amount the IRS lets most people subtract before tax, instead of listing every deduction.
+          </li>
+          <li>
+            Just you or married, filing your own return is
+            <strong>$16,100</strong>. You and a spouse together or surviving
+            spouse is <strong>$32,200</strong>. Head of household is
+            <strong>$24,150</strong>. Those are the official 2026 amounts.
+          </li>
+          <li>
+            If you are 65 or older or blind, the IRS adds
+            <strong>$1,650</strong>, or <strong>$2,050</strong> if you are
+            unmarried and not a surviving spouse. Age and blind can both
+            apply. If you file with a spouse, each of you can get those
+            extras.
+          </li>
+          <li>
+            If someone else can claim you, the starting amount is the greater
+            of <strong>$1,350</strong> or <strong>$450</strong> plus what you
+            earned from work, and it cannot go past the usual amount for how
+            you file. The extra for age or blind still adds on top.
+          </li>
+          <li>
+            The IRS newsroom mentions a separate senior deduction from the
+            2025 law. Those two pages do not publish a dollar for it, so we
+            do not add one.
+          </li>
+        </ul>
+        <p class="disclaimer">
+          This is an official IRS figure lookup, not tax advice and not a filing.
+        </p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <nav aria-label="Calculators">
+        <a href="../index.html">Home</a>
+        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>
+        <a href="../paint-coverage/">Paint</a>
+        <a href="../concrete-bags/">Concrete</a>
+        <a href="../mortgage-limit/">Mortgage cap</a>
+        <a href="../retirement-limits/">401(k) / IRA</a>
+        <a href="../mileage/">Mileage</a>
+        <a href="../hsa-limits/">HSA</a>
+      </nav>
+      <p>Sourced Calc · boring home calculators · not a contractor</p>
+    </footer>
+    <script src="./calculator.js"></script>
+    <script>
+      (function () {
+        var form = document.getElementById("form");
+        var resultEl = document.getElementById("result");
+        var formError = document.getElementById("form-error");
+        var spouseFields = document.getElementById("spouse-fields");
+        var earnedField = document.getElementById("earned-field");
+        var statusEl = document.getElementById("status");
+        var dependentEl = document.getElementById("dependent");
+        var api = window.qmStandardDeduction;
+
+        function esc(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        function yesNo(v) {
+          return v ? "Yes" : "No";
+        }
+
+        function syncFields() {
+          if (statusEl.value === "mfj") {
+            spouseFields.classList.remove("hidden");
+          } else {
+            spouseFields.classList.add("hidden");
+          }
+          if (dependentEl.value === "yes") {
+            earnedField.classList.remove("hidden");
+          } else {
+            earnedField.classList.add("hidden");
+          }
+        }
+
+        statusEl.addEventListener("change", syncFields);
+        dependentEl.addEventListener("change", syncFields);
+        syncFields();
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          formError.hidden = true;
+          var out = api.lookup({
+            status: statusEl.value,
+            age65: document.getElementById("age65").value,
+            blind: document.getElementById("blind").value,
+            spouseAge65: document.getElementById("spouseAge65").value,
+            spouseBlind: document.getElementById("spouseBlind").value,
+            dependent: dependentEl.value,
+            earned: document.getElementById("earned").value,
+          });
+          if (out.error) {
+            formError.hidden = false;
+            formError.textContent = out.error;
+            resultEl.classList.add("hidden");
+            return;
+          }
+          var html =
+            '<span class="pill public">Official figure</span>' +
+            "<h2 class='nums'>" +
+            esc(out.headline) +
+            "</h2>" +
+            '<p class="callout">' +
+            esc(out.humanLine) +
+            "</p>" +
+            "<ul>" +
+            "<li>How you file: " +
+            esc(out.statusLabel) +
+            " (the IRS calls this " +
+            esc(out.officialName) +
+            ")</li>" +
+            "<li>65 or older this year: " +
+            esc(yesNo(out.age65)) +
+            "</li>" +
+            "<li>Blind: " +
+            esc(yesNo(out.blind)) +
+            "</li>";
+          if (out.joint) {
+            html +=
+              "<li>Spouse 65 or older this year: " +
+              esc(yesNo(out.spouseAge65)) +
+              "</li>" +
+              "<li>Spouse blind: " +
+              esc(yesNo(out.spouseBlind)) +
+              "</li>";
+          }
+          html +=
+            "<li>Someone else can claim you: " +
+            esc(yesNo(out.dependent)) +
+            "</li>";
+          if (out.dependent) {
+            html +=
+              "<li>Earned from work: " +
+              esc(api.formatDollar(out.earned)) +
+              "</li>";
+          }
+          html +=
+            "<li>Official amount: <strong class='nums'>" +
+            esc(out.limitLabel) +
+            "</strong></li>";
+          if (out.extra) {
+            html +=
+              "<li>" +
+              esc(api.formatDollar(out.basic)) +
+              " plus extra " +
+              esc(api.formatDollar(out.extra)) +
+              " = " +
+              esc(out.limitLabel) +
+              "</li>";
+          }
+          if (out.extraNote) {
+            html += "<li>" + esc(out.extraNote) + "</li>";
+          }
+          if (out.dependentNote) {
+            html += "<li>" + esc(out.dependentNote) + "</li>";
+          }
+          html +=
+            "</ul>" +
+            '<p class="disclaimer">' +
+            esc(out.disclaimer) +
+            "</p>";
+          resultEl.innerHTML = html;
+          resultEl.classList.remove("hidden");
+          resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      })();
+    </script>
+  </body>
+</html>
