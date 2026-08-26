@@ -4,6 +4,7 @@
 wrangler.jsonc
 package.json
 package-lock.json
+.npmrc
 node_modules
 functions
 scripts
