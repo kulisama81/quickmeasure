@@ -1,4 +1,8 @@
 /**
+ * Pages Advanced Mode entry. Same host 301s as functions/_middleware.js.
+ * Lives at the static root so `wrangler pages deploy .` still compiles it
+ * when `.assetsignore` excludes `functions/`.
+ *
  * Host-level 301s. Cloudflare Pages `_redirects` cannot match on hostname
  * (domain-level redirects are unsupported), so a path rule would also fire on
  * sourcedcalc.com. SITE_URL env is not interpolated into static HTML.
@@ -6,7 +10,7 @@
  * www.sourcedcalc.com and production quickmeasure-a3q.pages.dev →
  * https://sourcedcalc.com + same path and query.
  * Preview hosts stay untouched.
- * Keep hosts in sync with scripts/public-host.js and `_worker.js`.
+ * Keep hosts in sync with scripts/public-host.js.
  */
 var PUBLIC_HOST = "sourcedcalc.com";
 var WWW_HOST = "www.sourcedcalc.com";
@@ -27,3 +31,11 @@ function maybeCanonicalRedirect(request) {
 export async function onRequest(context) {
   return maybeCanonicalRedirect(context.request) || context.next();
 }
+
+export default {
+  async fetch(request, env) {
+    var redirected = maybeCanonicalRedirect(request);
+    if (redirected) return redirected;
+    return env.ASSETS.fetch(request);
+  },
+};

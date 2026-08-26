@@ -1,16 +1,16 @@
 {
   "name": "quickmeasure",
-  // Static files + Pages Functions middleware for host 301s.
+  // Static files + Pages Functions / Advanced Mode worker for host 301s.
   // Public host is sourcedcalc.com (see scripts/public-host.js).
   // Custom domains are attached via the Pages domains API, not wrangler routes:
   // wrangler 4.x has no `pages domain` command; Workers `routes.custom_domain`
   // would be a different product than this existing Pages project.
   // Deploy: npm run pages:deploy
   // After npm ci, `npx wrangler pages deploy .` uses wrangler 4.126.0 (exact pin).
-  "compatibility_date": "2026-08-01",
-  "assets": {
-    "directory": ".",
-    "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
-  }
+  //
+  // pages_build_output_dir (not an assets-only Worker config) so `_worker.js`
+  // and `functions/_middleware.js` are compiled. An assets-only wrangler.jsonc
+  // serves HTML at 200 on pages.dev and skips the host 301s.
+  "pages_build_output_dir": ".",
+  "compatibility_date": "2026-08-01"
 }

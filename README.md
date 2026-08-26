@@ -47,7 +47,7 @@ Pages will serve `index.html` at `/`, `wa-heat-pump-rebate/index.html` at `/wa-h
 
 ### Wrangler
 
-`wrangler.jsonc` points Workers static assets at this directory (`assets.directory: "."`). Wrangler is pinned at **4.126.0** in `package.json` (exact, no caret). After `npm ci`, `npx wrangler` uses that local pin.
+`wrangler.jsonc` is a Pages project (`pages_build_output_dir: "."`) so host 301s in `_worker.js` and `functions/_middleware.js` are compiled. Do not switch it to an assets-only Worker config — that serves `pages.dev` at 200. Wrangler is pinned at **4.126.0** in `package.json` (exact, no caret). After `npm ci`, `npx wrangler` uses that local pin.
 
 ```bash
 npm ci
@@ -75,7 +75,7 @@ That script:
 
 Canonicals, `sitemap.xml`, and `robots.txt` hardcode `https://sourcedcalc.com`. This repo has no HTML build, so a `SITE_URL` env var would not rewrite those files.
 
-`functions/_middleware.js` 301s `www.sourcedcalc.com` and production `quickmeasure-a3q.pages.dev` → `https://sourcedcalc.com` + same path and query. Preview hosts stay untouched. Pages `_redirects` cannot match on hostname, so a path rule would also fire on the custom domain.
+`_worker.js` (Pages Advanced Mode) and `functions/_middleware.js` 301 `www.sourcedcalc.com` and production `quickmeasure-a3q.pages.dev` → `https://sourcedcalc.com` + same path and query. Preview hosts stay untouched. Pages `_redirects` cannot match on hostname, so a path rule would also fire on the custom domain.
 
 ## What this site will not do
 
