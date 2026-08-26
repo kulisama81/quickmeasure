@@ -10,6 +10,7 @@ const loanCsv = require(path.join(root, "scripts/loan-limit-csv.js"));
 const retirement = require(path.join(root, "retirement-limits/calculator.js"));
 const mileage = require(path.join(root, "mileage/calculator.js"));
 const hsa = require(path.join(root, "hsa-limits/calculator.js"));
+const std = require(path.join(root, "standard-deduction/calculator.js"));
 
 function hasDollar(text, n) {
   return String(text).indexOf("$" + n.toLocaleString("en-US")) !== -1 ||
@@ -279,6 +280,7 @@ assert.ok(sitemap.includes("https://sourcedcalc.com/mortgage-limit/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/retirement-limits/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/mileage/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/hsa-limits/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/standard-deduction/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/</loc>"));
 assert.ok(
   !/pages\.dev/.test(sitemap),
@@ -304,6 +306,10 @@ const htmlPages = [
   ],
   ["mileage/index.html", "https://sourcedcalc.com/mileage/"],
   ["hsa-limits/index.html", "https://sourcedcalc.com/hsa-limits/"],
+  [
+    "standard-deduction/index.html",
+    "https://sourcedcalc.com/standard-deduction/",
+  ],
 ];
 var GA4_ID = "G-3SB1LCNKZK";
 
@@ -554,6 +560,10 @@ function assertNoAds(html, name) {
   [
     "hsa-limits",
     fs.readFileSync(path.join(root, "hsa-limits/index.html"), "utf8"),
+  ],
+  [
+    "standard-deduction",
+    fs.readFileSync(path.join(root, "standard-deduction/index.html"), "utf8"),
   ],
 ].forEach(function (pair) {
   assertNoAds(pair[1], pair[0]);
@@ -944,5 +954,239 @@ assert.ok(
   homeHtml.includes("How much you can put in an HSA this year (2026)")
 );
 assertNoAds(hsaHtml, "hsa-limits");
+
+assert.strictEqual(std.YEAR, 2026);
+assert.strictEqual(std.SINGLE, 16100);
+assert.strictEqual(std.MFS, 16100);
+assert.strictEqual(std.MFJ, 32200);
+assert.strictEqual(std.SURVIVING_SPOUSE, 32200);
+assert.strictEqual(std.HOH, 24150);
+assert.strictEqual(std.EXTRA_MARRIED_OR_SS, 1650);
+assert.strictEqual(std.EXTRA_UNMARRIED, 2050);
+assert.strictEqual(std.DEPENDENT_FLOOR, 1350);
+assert.strictEqual(std.DEPENDENT_EARNED_ADDON, 450);
+assert.ok(std.SINGLE !== 15750, "do not use the 2025 single amount as 2026");
+assert.ok(std.MFJ !== 31500, "do not use the 2025 joint amount as 2026");
+assert.ok(std.HOH !== 23625, "do not use the 2025 head-of-household amount as 2026");
+assert.ok(std.EXTRA_UNMARRIED !== 6000, "do not invent a senior bonus");
+assert.ok(std.EXTRA_MARRIED_OR_SS !== 6000, "do not invent a senior bonus");
+
+function stdLookup(status, age65, blind, extra) {
+  extra = extra || {};
+  return std.lookup({
+    status: status,
+    age65: age65,
+    blind: blind,
+    spouseAge65: extra.spouseAge65,
+    spouseBlind: extra.spouseBlind,
+    dependent: extra.dependent == null ? "no" : extra.dependent,
+    earned: extra.earned,
+  });
+}
+
+assert.strictEqual(stdLookup("single", "no", "no").limit, 16100);
+assert.strictEqual(stdLookup("mfs", "no", "no").limit, 16100);
+assert.strictEqual(stdLookup("mfj", "no", "no", {
+  spouseAge65: "no",
+  spouseBlind: "no",
+}).limit, 32200);
+assert.strictEqual(stdLookup("ss", "no", "no").limit, 32200);
+assert.strictEqual(stdLookup("hoh", "no", "no").limit, 24150);
+
+assert.strictEqual(stdLookup("single", "yes", "no").limit, 16100 + 2050);
+assert.strictEqual(stdLookup("single", "no", "yes").limit, 16100 + 2050);
+assert.strictEqual(stdLookup("single", "yes", "yes").limit, 16100 + 4100);
+assert.strictEqual(stdLookup("hoh", "yes", "no").limit, 24150 + 2050);
+assert.strictEqual(stdLookup("mfs", "yes", "no").limit, 16100 + 1650);
+assert.strictEqual(stdLookup("ss", "yes", "no").limit, 32200 + 1650);
+assert.strictEqual(stdLookup("ss", "yes", "yes").limit, 32200 + 3300);
+
+assert.strictEqual(
+  stdLookup("mfj", "yes", "no", { spouseAge65: "no", spouseBlind: "no" }).limit,
+  32200 + 1650
+);
+assert.strictEqual(
+  stdLookup("mfj", "yes", "no", { spouseAge65: "yes", spouseBlind: "no" }).limit,
+  32200 + 3300
+);
+assert.strictEqual(
+  stdLookup("mfj", "yes", "yes", { spouseAge65: "yes", spouseBlind: "yes" }).limit,
+  32200 + 6600
+);
+assert.strictEqual(
+  stdLookup("mfj", "no", "yes", { spouseAge65: "no", spouseBlind: "yes" }).limit,
+  32200 + 3300
+);
+
+assert.strictEqual(stdLookup("single", "yes", "no").extra, 2050);
+assert.strictEqual(stdLookup("mfs", "yes", "no").extra, 1650);
+assert.strictEqual(stdLookup("ss", "yes", "no").extra, 1650);
+assert.ok(stdLookup("single", "yes", "yes").extra === 4100);
+assert.ok(stdLookup("single", "yes", "no").limit !== 16100 + 1650);
+assert.ok(stdLookup("mfj", "yes", "no", {
+  spouseAge65: "no",
+  spouseBlind: "no",
+}).limit !== 32200 + 2050);
+
+assert.strictEqual(
+  stdLookup("single", "no", "no", { dependent: "yes", earned: 0 }).limit,
+  1350
+);
+assert.strictEqual(
+  stdLookup("single", "no", "no", { dependent: "yes", earned: 4000 }).limit,
+  4450
+);
+assert.strictEqual(
+  stdLookup("single", "no", "no", { dependent: "yes", earned: 20000 }).limit,
+  16100
+);
+assert.strictEqual(
+  stdLookup("single", "yes", "no", { dependent: "yes", earned: 0 }).limit,
+  1350 + 2050
+);
+assert.strictEqual(
+  stdLookup("single", "yes", "yes", { dependent: "yes", earned: 0 }).limit,
+  1350 + 4100
+);
+assert.strictEqual(
+  stdLookup("hoh", "no", "no", { dependent: "yes", earned: 0 }).limit,
+  1350
+);
+
+var stdUnknown = std.lookup({
+  status: "trust",
+  age65: "no",
+  blind: "no",
+  dependent: "no",
+});
+assert.ok(stdUnknown.error);
+assert.ok(/do not have an official dollar/i.test(stdUnknown.error));
+assert.ok(stdUnknown.limit == null);
+
+var stdMissing = std.lookup({});
+assert.ok(stdMissing.error);
+assert.ok(/how you file/i.test(stdMissing.error));
+
+assert.strictEqual(
+  std.HUMAN_LINE,
+  "This is the amount the IRS lets most people subtract before tax, instead of listing every deduction."
+);
+assert.strictEqual(stdLookup("single", "no", "no").humanLine, std.HUMAN_LINE);
+assert.ok(
+  /official IRS figure lookup, not tax advice and not a filing/i.test(
+    stdLookup("single", "no", "no").disclaimer
+  )
+);
+assert.ok(/\$2,050/.test(stdLookup("single", "yes", "no").extraNote));
+assert.ok(/\$1,650/.test(stdLookup("mfs", "yes", "no").extraNote));
+assert.ok(stdLookup("single", "no", "no").extraNote == null);
+assert.ok(
+  /greater of \$1,350/.test(
+    stdLookup("single", "no", "no", { dependent: "yes", earned: 0 }).dependentNote
+  )
+);
+
+function stdCopy(out) {
+  return [
+    out.headline,
+    out.humanLine,
+    out.extraNote,
+    out.dependentNote,
+    out.disclaimer,
+    out.statusLabel,
+    out.limitLabel,
+  ].join(" ");
+}
+
+[
+  stdLookup("single", "yes", "yes"),
+  stdLookup("mfj", "yes", "yes", {
+    spouseAge65: "yes",
+    spouseBlind: "yes",
+  }),
+  stdLookup("ss", "yes", "yes"),
+].forEach(function (out) {
+  var copy = stdCopy(out);
+  assert.ok(!/\$6,000/.test(copy), "do not invent a $6,000 senior bonus");
+  assert.ok(!/senior bonus/i.test(copy));
+  assert.ok(/not tax advice/i.test(out.disclaimer));
+});
+
+const stdHtml = fs.readFileSync(
+  path.join(root, "standard-deduction/index.html"),
+  "utf8"
+);
+assert.ok(stdHtml.includes("Last opened 2026-08-25"));
+assert.ok(
+  stdHtml.includes(
+    "https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill"
+  )
+);
+assert.ok(stdHtml.includes("https://www.irs.gov/pub/irs-drop/rp-25-32.pdf"));
+assert.ok(stdHtml.includes("$16,100"));
+assert.ok(stdHtml.includes("$32,200"));
+assert.ok(stdHtml.includes("$24,150"));
+assert.ok(stdHtml.includes("$1,650"));
+assert.ok(stdHtml.includes("$2,050"));
+assert.ok(stdHtml.includes("$1,350"));
+assert.ok(stdHtml.includes("$450"));
+assert.ok(stdHtml.includes(std.HUMAN_LINE));
+assert.ok(/out\.humanLine/.test(stdHtml), "result must render the human line");
+assert.ok(/not tax advice/i.test(stdHtml));
+assert.ok(/not a filing/i.test(stdHtml));
+assertLiveGa4(stdHtml, "standard-deduction");
+assert.ok(!/G-CHZH4ENKK3/.test(stdHtml));
+assert.ok(!/G-[A-Z0-9]+/.test(stdHtml.replace(/G-3SB1LCNKZK/g, "")));
+assert.ok(
+  !/\$6,000/.test(stdHtml),
+  "do not invent a $6,000 senior bonus on the page"
+);
+assert.ok(/do not add one/i.test(stdHtml));
+
+const stdLabels = [];
+stdHtml.replace(/<label[^>]*>([\s\S]*?)<\/label>/g, function (_, inner) {
+  stdLabels.push(inner.replace(/\s+/g, " ").trim());
+  return _;
+});
+assert.ok(stdLabels.length >= 4, "standard deduction page needs field labels");
+stdLabels.forEach(function (lab) {
+  assert.ok(
+    !/^(MFS|HoH|HOH|MFJ|AGI|QW)$/i.test(lab),
+    "label must not be jargon-only: " + lab
+  );
+});
+assert.ok(
+  stdLabels.some(function (l) {
+    return /how do you file this year/i.test(l);
+  })
+);
+assert.ok(
+  stdLabels.some(function (l) {
+    return /65 or older this year/i.test(l);
+  })
+);
+assert.ok(
+  stdLabels.some(function (l) {
+    return /are you blind/i.test(l);
+  })
+);
+assert.ok(
+  stdLabels.some(function (l) {
+    return /someone else claim you as a dependent/i.test(l);
+  })
+);
+assert.ok(/Just you/.test(stdHtml));
+assert.ok(/You and a spouse together/.test(stdHtml));
+assert.ok(/Head of household/.test(stdHtml));
+assert.ok(/Age and blind can both apply/.test(stdHtml));
+assert.ok(/unmarried and not a surviving spouse/.test(stdHtml));
+
+assert.ok(homeHtml.includes("./standard-deduction/"));
+assert.ok(
+  homeHtml.includes(
+    "How much the IRS lets most people subtract before tax (2026)"
+  )
+);
+assertNoAds(stdHtml, "standard-deduction");
 
 console.log("ok");
