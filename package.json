@@ -1,0 +1,10 @@
+{
+  "name": "quickmeasure",
+  "private": true,
+  "scripts": {
+    "pages:deploy": "wrangler pages deploy ."
+  },
+  "devDependencies": {
+    "wrangler": "4.126.0"
+  }
+}

@@ -5,7 +5,8 @@
   // Custom domains are attached via the Pages domains API, not wrangler routes:
   // wrangler 4.x has no `pages domain` command; Workers `routes.custom_domain`
   // would be a different product than this existing Pages project.
-  // Deploy: npx wrangler pages deploy .
+  // Deploy: npm run pages:deploy
+  // After npm ci, `npx wrangler pages deploy .` uses wrangler 4.126.0 (exact pin).
   "compatibility_date": "2026-08-01",
   "assets": {
     "directory": ".",
