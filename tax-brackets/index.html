@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f6b4a" />
+    <title>
+      What tax rate the IRS uses at each income level (2026) · Sourced Calc
+    </title>
+    <meta
+      name="description"
+      content="Look up the official 2026 IRS income-tax rate for just you or you and a spouse together. Official figure lookup, not tax advice."
+    />
+    <link rel="canonical" href="https://sourcedcalc.com/tax-brackets/" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3SB1LCNKZK"></script>
+    <script src="../ga.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">Sourced Calc</a>
+        <span class="tagline">boring home calculators</span>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <h1>What tax rate the IRS uses at each income level (2026)</h1>
+      <p class="lede">
+        Pick how you file and type the income. We look up the official rate.
+        Official figure lookup, not tax advice.
+      </p>
+
+      <form class="card" id="form" novalidate>
+        <p class="note">
+          How you file and the income are required.
+        </p>
+        <div class="field">
+          <label for="status">How do you file this year?</label>
+          <select id="status" name="status" required>
+            <option value="">Choose...</option>
+            <option value="single">Just you</option>
+            <option value="mfj">You and a spouse together</option>
+          </select>
+          <span class="hint after"
+            >Just you is what the IRS calls single. You and a spouse together
+            is married filing jointly. This page only has those two because
+            those are the two the IRS newsroom post lists for these rates.</span
+          >
+        </div>
+        <div class="field">
+          <label for="income">How much is the income?</label>
+          <input
+            id="income"
+            name="income"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="1"
+            placeholder="e.g. 50400"
+            required
+          />
+          <span class="hint after"
+            >Type the income amount you want to look up. The IRS page lists
+            rates by income. This is a rate lookup, not a tax bill.</span
+          >
+        </div>
+        <button class="btn" type="submit">Look up the rate</button>
+        <p class="disclaimer" id="form-error" hidden></p>
+      </form>
+
+      <section class="result hidden" id="result" aria-live="polite"></section>
+
+      <section class="sources">
+        <h2>Sources</h2>
+        <p class="note">
+          Dollars on this page come only from this official link.
+          Last opened 2026-08-26. If a case is not on that page, we do not
+          invent a dollar.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>What we use</th>
+                <th>Official page</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>IRS 2026 inflation newsroom post</td>
+                <td>
+                  2026 rates for just you and you and a spouse together only.
+                  10% for incomes of $12,400 or less just you ($24,800 you and
+                  a spouse together). 12% over $12,400 ($24,800). 22% over
+                  $50,400 ($100,800). 24% over $105,700 ($211,400). 32% over
+                  $201,775 ($403,550). 35% over $256,225 ($512,450). 37% for
+                  incomes greater than $640,600 ($768,700).
+                </td>
+                <td>
+                  <a
+                    href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill"
+                    >IRS releases tax inflation adjustments for tax year
+                    2026</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="assumptions card" style="margin-top: 1.25rem">
+        <h2>What this number is</h2>
+        <ul>
+          <li>
+            This is the rate the IRS uses on the last part of that income, not a rate on all of it.
+          </li>
+          <li>
+            Just you and you and a spouse together are the two the IRS newsroom post lists for these 10% to 37% rates. We do not have official dollars here for head of household or any other way of filing.
+          </li>
+          <li>
+            10% is for incomes of <strong>$12,400</strong> or less (just you)
+            or <strong>$24,800</strong> or less (you and a spouse together).
+          </li>
+          <li>
+            12% is for incomes over <strong>$12,400</strong> (just you) or
+            over <strong>$24,800</strong> (you and a spouse together).
+          </li>
+          <li>
+            22% is for incomes over <strong>$50,400</strong> (just you) or
+            over <strong>$100,800</strong> (you and a spouse together).
+          </li>
+          <li>
+            24% is for incomes over <strong>$105,700</strong> (just you) or
+            over <strong>$211,400</strong> (you and a spouse together).
+          </li>
+          <li>
+            32% is for incomes over <strong>$201,775</strong> (just you) or
+            over <strong>$403,550</strong> (you and a spouse together).
+          </li>
+          <li>
+            35% is for incomes over <strong>$256,225</strong> (just you) or
+            over <strong>$512,450</strong> (you and a spouse together).
+          </li>
+          <li>
+            37% is for incomes greater than <strong>$640,600</strong> (just
+            you) or greater than <strong>$768,700</strong> (you and a spouse
+            together).
+          </li>
+          <li>
+            We do not add up a tax bill from these rates. We do not invent a
+            rate for a filing status that is not on that IRS page.
+          </li>
+        </ul>
+        <p class="disclaimer">
+          This is an official IRS figure lookup, not tax advice and not a filing.
+        </p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <nav aria-label="Calculators">
+        <a href="../index.html">Home</a>
+        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>
+        <a href="../paint-coverage/">Paint</a>
+        <a href="../concrete-bags/">Concrete</a>
+        <a href="../mortgage-limit/">Mortgage cap</a>
+        <a href="../retirement-limits/">401(k) / IRA</a>
+        <a href="../mileage/">Mileage</a>
+        <a href="../hsa-limits/">HSA</a>
+        <a href="../standard-deduction/">Standard deduction</a>
+      </nav>
+      <p>Sourced Calc · boring home calculators · not a contractor</p>
+    </footer>
+    <script src="./calculator.js"></script>
+    <script>
+      (function () {
+        var form = document.getElementById("form");
+        var resultEl = document.getElementById("result");
+        var formError = document.getElementById("form-error");
+        var api = window.qmTaxBrackets;
+
+        function esc(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          formError.hidden = true;
+          var out = api.lookup({
+            status: document.getElementById("status").value,
+            income: document.getElementById("income").value,
+          });
+          if (out.error) {
+            formError.hidden = false;
+            formError.textContent = out.error;
+            resultEl.classList.add("hidden");
+            return;
+          }
+          var html =
+            '<span class="pill public">Official figure</span>' +
+            "<h2 class='nums'>" +
+            esc(out.headline) +
+            "</h2>" +
+            '<p class="callout">' +
+            esc(out.humanLine) +
+            "</p>" +
+            "<ul>" +
+            "<li>How you file: " +
+            esc(out.statusLabel) +
+            " (the IRS calls this " +
+            esc(out.officialName) +
+            ")</li>" +
+            "<li>Income: <strong class='nums'>" +
+            esc(out.incomeLabel) +
+            "</strong></li>" +
+            "<li>Official rate: <strong class='nums'>" +
+            esc(out.rateLabel) +
+            "</strong></li>" +
+            "<li>" +
+            esc(out.thresholdNote) +
+            "</li>" +
+            "</ul>" +
+            '<p class="disclaimer">' +
+            esc(out.disclaimer) +
+            "</p>";
+          resultEl.innerHTML = html;
+          resultEl.classList.remove("hidden");
+          resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      })();
+    </script>
+  </body>
+</html>

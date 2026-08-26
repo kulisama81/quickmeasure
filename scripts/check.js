@@ -11,6 +11,7 @@ const retirement = require(path.join(root, "retirement-limits/calculator.js"));
 const mileage = require(path.join(root, "mileage/calculator.js"));
 const hsa = require(path.join(root, "hsa-limits/calculator.js"));
 const std = require(path.join(root, "standard-deduction/calculator.js"));
+const tax = require(path.join(root, "tax-brackets/calculator.js"));
 
 function hasDollar(text, n) {
   return String(text).indexOf("$" + n.toLocaleString("en-US")) !== -1 ||
@@ -281,6 +282,7 @@ assert.ok(sitemap.includes("https://sourcedcalc.com/retirement-limits/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/mileage/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/hsa-limits/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/standard-deduction/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/tax-brackets/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/</loc>"));
 assert.ok(
   !/pages\.dev/.test(sitemap),
@@ -310,6 +312,7 @@ const htmlPages = [
     "standard-deduction/index.html",
     "https://sourcedcalc.com/standard-deduction/",
   ],
+  ["tax-brackets/index.html", "https://sourcedcalc.com/tax-brackets/"],
 ];
 var GA4_ID = "G-3SB1LCNKZK";
 
@@ -564,6 +567,10 @@ function assertNoAds(html, name) {
   [
     "standard-deduction",
     fs.readFileSync(path.join(root, "standard-deduction/index.html"), "utf8"),
+  ],
+  [
+    "tax-brackets",
+    fs.readFileSync(path.join(root, "tax-brackets/index.html"), "utf8"),
   ],
 ].forEach(function (pair) {
   assertNoAds(pair[1], pair[0]);
@@ -1188,5 +1195,183 @@ assert.ok(
   )
 );
 assertNoAds(stdHtml, "standard-deduction");
+
+assert.strictEqual(tax.YEAR, 2026);
+assert.strictEqual(tax.SINGLE_10_OR_LESS, 12400);
+assert.strictEqual(tax.JOINT_10_OR_LESS, 24800);
+assert.strictEqual(tax.SINGLE_12_OVER, 12400);
+assert.strictEqual(tax.JOINT_12_OVER, 24800);
+assert.strictEqual(tax.SINGLE_22_OVER, 50400);
+assert.strictEqual(tax.JOINT_22_OVER, 100800);
+assert.strictEqual(tax.SINGLE_24_OVER, 105700);
+assert.strictEqual(tax.JOINT_24_OVER, 211400);
+assert.strictEqual(tax.SINGLE_32_OVER, 201775);
+assert.strictEqual(tax.JOINT_32_OVER, 403550);
+assert.strictEqual(tax.SINGLE_35_OVER, 256225);
+assert.strictEqual(tax.JOINT_35_OVER, 512450);
+assert.strictEqual(tax.SINGLE_37_OVER, 640600);
+assert.strictEqual(tax.JOINT_37_OVER, 768700);
+assert.ok(tax.SINGLE_37_OVER !== 609350, "do not use a prior-year 37% line");
+assert.ok(tax.JOINT_37_OVER !== 731200, "do not use a prior-year 37% line");
+
+function taxLookup(status, income) {
+  return tax.lookup({ status: status, income: income });
+}
+
+assert.strictEqual(taxLookup("single", 0).rate, 10);
+assert.strictEqual(taxLookup("single", 12400).rate, 10);
+assert.strictEqual(taxLookup("single", 12401).rate, 12);
+assert.strictEqual(taxLookup("single", 50400).rate, 12);
+assert.strictEqual(taxLookup("single", 50401).rate, 22);
+assert.strictEqual(taxLookup("single", 105700).rate, 22);
+assert.strictEqual(taxLookup("single", 105701).rate, 24);
+assert.strictEqual(taxLookup("single", 201775).rate, 24);
+assert.strictEqual(taxLookup("single", 201776).rate, 32);
+assert.strictEqual(taxLookup("single", 256225).rate, 32);
+assert.strictEqual(taxLookup("single", 256226).rate, 35);
+assert.strictEqual(taxLookup("single", 640600).rate, 35);
+assert.strictEqual(taxLookup("single", 640601).rate, 37);
+
+assert.strictEqual(taxLookup("mfj", 0).rate, 10);
+assert.strictEqual(taxLookup("mfj", 24800).rate, 10);
+assert.strictEqual(taxLookup("mfj", 24801).rate, 12);
+assert.strictEqual(taxLookup("mfj", 100800).rate, 12);
+assert.strictEqual(taxLookup("mfj", 100801).rate, 22);
+assert.strictEqual(taxLookup("mfj", 211400).rate, 22);
+assert.strictEqual(taxLookup("mfj", 211401).rate, 24);
+assert.strictEqual(taxLookup("mfj", 403550).rate, 24);
+assert.strictEqual(taxLookup("mfj", 403551).rate, 32);
+assert.strictEqual(taxLookup("mfj", 512450).rate, 32);
+assert.strictEqual(taxLookup("mfj", 512451).rate, 35);
+assert.strictEqual(taxLookup("mfj", 768700).rate, 35);
+assert.strictEqual(taxLookup("mfj", 768701).rate, 37);
+
+assert.strictEqual(taxLookup("just you", 12400).rate, 10);
+assert.strictEqual(taxLookup("you and a spouse together", 24800).rate, 10);
+assert.strictEqual(taxLookup("single", 50400).statusLabel, "Just you");
+assert.strictEqual(
+  taxLookup("mfj", 100800).statusLabel,
+  "You and a spouse together"
+);
+assert.strictEqual(taxLookup("single", 640601).headline, "37%");
+assert.strictEqual(taxLookup("single", 50401).rateLabel, "22%");
+assert.ok(/over \$50,400/.test(taxLookup("single", 50401).thresholdNote));
+assert.ok(/\$12,400 or less/.test(taxLookup("single", 12400).thresholdNote));
+assert.ok(/greater than \$640,600/.test(taxLookup("single", 640601).thresholdNote));
+
+var taxHoh = tax.lookup({ status: "hoh", income: 50000 });
+assert.ok(taxHoh.error);
+assert.ok(/do not have an official dollar/i.test(taxHoh.error));
+assert.ok(taxHoh.rate == null);
+
+var taxMfs = tax.lookup({ status: "mfs", income: 50000 });
+assert.ok(taxMfs.error);
+assert.ok(/do not have an official dollar/i.test(taxMfs.error));
+assert.ok(taxMfs.rate == null);
+
+var taxMissing = tax.lookup({});
+assert.ok(taxMissing.error);
+assert.ok(/how you file/i.test(taxMissing.error));
+
+var taxNoIncome = tax.lookup({ status: "single" });
+assert.ok(taxNoIncome.error);
+assert.ok(/income/i.test(taxNoIncome.error));
+
+assert.strictEqual(
+  tax.HUMAN_LINE,
+  "This is the rate the IRS uses on the last part of that income, not a rate on all of it."
+);
+assert.strictEqual(taxLookup("single", 50400).humanLine, tax.HUMAN_LINE);
+assert.ok(
+  /official IRS figure lookup, not tax advice and not a filing/i.test(
+    taxLookup("single", 50400).disclaimer
+  )
+);
+
+function taxCopy(out) {
+  return [
+    out.headline,
+    out.humanLine,
+    out.thresholdNote,
+    out.disclaimer,
+    out.statusLabel,
+    out.rateLabel,
+    out.incomeLabel,
+  ].join(" ");
+}
+
+[taxLookup("single", 50401), taxLookup("mfj", 768701)].forEach(function (out) {
+  var copy = taxCopy(out);
+  assert.ok(!/head of household/i.test(copy));
+  assert.ok(/not tax advice/i.test(out.disclaimer));
+});
+
+const taxHtml = fs.readFileSync(
+  path.join(root, "tax-brackets/index.html"),
+  "utf8"
+);
+assert.ok(taxHtml.includes("Last opened 2026-08-26"));
+assert.ok(
+  taxHtml.includes(
+    "https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill"
+  )
+);
+assert.ok(taxHtml.includes("$12,400"));
+assert.ok(taxHtml.includes("$24,800"));
+assert.ok(taxHtml.includes("$50,400"));
+assert.ok(taxHtml.includes("$100,800"));
+assert.ok(taxHtml.includes("$105,700"));
+assert.ok(taxHtml.includes("$211,400"));
+assert.ok(taxHtml.includes("$201,775"));
+assert.ok(taxHtml.includes("$403,550"));
+assert.ok(taxHtml.includes("$256,225"));
+assert.ok(taxHtml.includes("$512,450"));
+assert.ok(taxHtml.includes("$640,600"));
+assert.ok(taxHtml.includes("$768,700"));
+assert.ok(taxHtml.includes(tax.HUMAN_LINE));
+assert.ok(/out\.humanLine/.test(taxHtml), "result must render the human line");
+assert.ok(/not tax advice/i.test(taxHtml));
+assert.ok(/not a filing/i.test(taxHtml));
+assertLiveGa4(taxHtml, "tax-brackets");
+assert.ok(!/G-[A-Z0-9]+/.test(taxHtml.replace(/G-3SB1LCNKZK/g, "")));
+assert.ok(
+  !/head of household/i.test(taxHtml.replace(/head of household or any other/gi, "")),
+  "do not invent a head-of-household bracket table"
+);
+assert.ok(/do not have official dollars here for head of household/i.test(taxHtml));
+assert.ok(!/adsbygoogle|affiliate|amazon\.com|shareasale/i.test(taxHtml));
+
+const taxLabels = [];
+taxHtml.replace(/<label[^>]*>([\s\S]*?)<\/label>/g, function (_, inner) {
+  taxLabels.push(inner.replace(/\s+/g, " ").trim());
+  return _;
+});
+assert.ok(taxLabels.length >= 2, "tax brackets page needs field labels");
+taxLabels.forEach(function (lab) {
+  assert.ok(
+    !/^(MFJ|MFS|HoH|HOH|AGI|marginal rate)$/i.test(lab),
+    "label must not be jargon-only: " + lab
+  );
+});
+assert.ok(
+  taxLabels.some(function (l) {
+    return /how do you file this year/i.test(l);
+  })
+);
+assert.ok(
+  taxLabels.some(function (l) {
+    return /how much is the income/i.test(l);
+  })
+);
+assert.ok(/Just you/.test(taxHtml));
+assert.ok(/You and a spouse together/.test(taxHtml));
+assert.ok(!/<option[^>]*>Head of household<\/option>/i.test(taxHtml));
+assert.ok(/do not add up a tax bill/i.test(taxHtml));
+
+assert.ok(homeHtml.includes("./tax-brackets/"));
+assert.ok(
+  homeHtml.includes("What tax rate the IRS uses at each income level (2026)")
+);
+assertNoAds(taxHtml, "tax-brackets");
 
 console.log("ok");
