@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#1f6b4a" />
     <title>
-      How much you can put in a 401(k) or IRA this year (2026) · Sourced Calc
+      How much you can put in a health FSA this year (2026) · Sourced Calc
     </title>
     <meta
       name="description"
-      content="Look up the official 2026 yearly cap for a workplace 401(k) or an IRA. Under that dollar you are within the cap; over it, the IRS does not let you put more in that account this year. Estimate, not tax advice."
+      content="Look up the official 2026 health FSA cap for what you set aside from pay, and the leftover max if your plan lets unused money carry to next year. Not tax advice."
     />
-    <link rel="canonical" href="https://sourcedcalc.com/retirement-limits/" />
+    <link rel="canonical" href="https://sourcedcalc.com/fsa-limits/" />
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="../styles.css" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-3SB1LCNKZK"></script>
@@ -26,52 +26,34 @@
       </div>
     </header>
     <main id="main" class="wrap">
-      <h1>How much you can put in a 401(k) or IRA this year (2026)</h1>
+      <h1>How much you can put in a health FSA this year (2026)</h1>
       <p class="lede">
-        Pick the account and your age. We look up the official yearly dollar
-        cap. Estimate, not tax advice.
+        Pick whether your plan lets unused health FSA money carry to next year.
+        We look up the official yearly dollar. Not tax advice.
       </p>
 
       <form class="card" id="form" novalidate>
         <p class="note">
-          Which account and age are required. How much you already plan to put
-          in is optional.
+          Whether unused money can carry to next year is required. How much you
+          plan to set aside from pay is optional.
         </p>
         <div class="field">
-          <label for="account">Which account is this for?</label>
-          <select id="account" name="account" required>
+          <label for="carryover"
+            >Does your plan let unused health FSA money carry to next year?</label>
+          <select id="carryover" name="carryover" required>
             <option value="">Choose...</option>
-            <option value="workplace">
-              A workplace plan (401(k), 403(b), government 457, or TSP)
-            </option>
-            <option value="ira">An IRA you open yourself</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
           </select>
           <span class="hint after"
-            >IRA extra at 50 or older is $1,100. That is only for an IRA. Workplace 401(k) extra at 50 or older is $8,000. Ages 60–63 use $11,250 instead of $8,000. Those workplace extras are not for an IRA. We do not have an official dollar here for SIMPLE plans.</span
-          >
-        </div>
-        <div class="field">
-          <label for="age">How old will you be at the end of 2026?</label>
-          <input
-            id="age"
-            name="age"
-            type="number"
-            inputmode="numeric"
-            min="0"
-            max="120"
-            step="1"
-            required
-            placeholder="e.g. 49"
-          />
-          <span class="hint after"
-            >The extra amount for older savers depends on the age you will be
-            on December 31, 2026. Use that age, not the age you are today if
-            your birthday is still coming.</span
+            >Only use the $680 leftover number if your plan lets unused money
+            move to next year. Many plans do not. If you are not sure, check
+            your plan paperwork.</span
           >
         </div>
         <div class="field">
           <label for="amount"
-            >How much do you already plan to put in this year? (optional)</label>
+            >How much do you plan to set aside from pay this year? (optional)</label>
           <input
             id="amount"
             name="amount"
@@ -79,7 +61,7 @@
             inputmode="decimal"
             min="0"
             step="1"
-            placeholder="e.g. 20000"
+            placeholder="e.g. 3000"
           />
           <span class="hint after"
             >Leave this blank to only see the official cap. If you type a
@@ -87,7 +69,7 @@
             cap.</span
           >
         </div>
-        <button class="btn" type="submit">Look up the cap</button>
+        <button class="btn" type="submit">Look up the limit</button>
         <p class="disclaimer" id="form-error" hidden></p>
       </form>
 
@@ -97,7 +79,7 @@
         <h2>Sources</h2>
         <p class="note">
           Dollars on this page come only from these official links.
-          Last opened 2026-08-25. If a case is not on those pages, we do not
+          Last opened 2026-08-27. If a case is not on those pages, we do not
           invent a dollar.
         </p>
         <div class="table-wrap">
@@ -111,26 +93,30 @@
             </thead>
             <tbody>
               <tr>
-                <td>IRS 2026 newsroom post</td>
+                <td>IRS 2026 inflation newsroom post</td>
                 <td>
-                  Workplace-plan employee cap $24,500. Age 50+ extra $8,000
-                  ($32,500 total). Ages 60, 61, 62, and 63 extra $11,250
-                  instead of $8,000. IRA cap $7,500. Age 50+ IRA extra $1,100.
+                  Health FSA set-aside from pay $3,400 for tax years beginning
+                  in 2026. If the plan lets unused money carry to next year,
+                  max leftover $680.
                 </td>
                 <td>
                   <a
-                    href="https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500"
-                    >401(k) limit increases to $24,500 for 2026, IRA limit
-                    increases to $7,500</a
+                    href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill"
+                    >IRS releases tax inflation adjustments for tax year
+                    2026</a
                   >
                 </td>
               </tr>
               <tr>
-                <td>IRS Notice 2025-67</td>
-                <td>Same 2026 dollar caps as published in the notice</td>
+                <td>Rev. Proc. 2025-32 (PDF)</td>
                 <td>
-                  <a href="https://www.irs.gov/pub/irs-drop/n-25-67.pdf"
-                    >Notice 2025-67 (PDF)</a
+                  Same $3,400 set-aside cap and $680 leftover max for taxable
+                  years beginning in 2026, when the plan lets unused money
+                  carry over.
+                </td>
+                <td>
+                  <a href="https://www.irs.gov/pub/irs-drop/rp-25-32.pdf"
+                    >Rev. Proc. 2025-32 (PDF)</a
                   >
                 </td>
               </tr>
@@ -143,28 +129,26 @@
         <h2>What this number is</h2>
         <ul>
           <li>
-            Under this dollar, you are within the official yearly cap; over it, the IRS does not let you put more in that account this year.
+            Under this dollar, you are within the IRS cap for what you set aside from pay; over it, the IRS does not let that salary reduction go higher for the year.
           </li>
           <li>
-            The workplace number is what
-            <strong>you</strong> can put in from your pay in 2026 for a 401(k),
-            403(b), government 457, or TSP. It is not what your employer adds.
+            The official 2026 cap for what you set aside from pay is
+            <strong>$3,400</strong>.
           </li>
           <li>
-            IRA extra at 50 or older is $1,100. That is only for an IRA.
+            If the plan lets unused money carry to next year, the max leftover
+            is <strong>$680</strong>. Only use that $680 if the plan allows it.
+            That leftover is unused money, not extra you can set aside from
+            this year's pay.
           </li>
           <li>
-            Workplace 401(k) extra at 50 or older is $8,000. Ages 60–63 use $11,250 instead of $8,000. Those workplace extras are not for an IRA.
-          </li>
-          <li>
-            We do not have official dollars here for SIMPLE plans, Roth or
-            traditional income cutoffs, or the Saver’s Credit. Those cases are
-            on the IRS pages but are not this calculator.
+            This page is only the health FSA set-aside cap and that leftover
+            max. We do not look up dependent-care FSA, transit, parking, or
+            other fringe dollars here.
           </li>
         </ul>
         <p class="disclaimer">
-          This is an estimate, not tax advice or a quote. Your plan or IRA
-          custodian can still set a lower number.
+          This is an official IRS figure lookup, not tax advice.
         </p>
       </section>
     </main>
@@ -175,11 +159,11 @@
         <a href="../paint-coverage/">Paint</a>
         <a href="../concrete-bags/">Concrete</a>
         <a href="../mortgage-limit/">Mortgage cap</a>
+        <a href="../retirement-limits/">401(k) / IRA</a>
         <a href="../mileage/">Mileage</a>
         <a href="../hsa-limits/">HSA</a>
         <a href="../standard-deduction/">Standard deduction</a>
         <a href="../tax-brackets/">Tax rates</a>
-        <a href="../fsa-limits/">Health FSA</a>
       </nav>
       <p>Sourced Calc · boring home calculators · not a contractor</p>
     </footer>
@@ -189,7 +173,7 @@
         var form = document.getElementById("form");
         var resultEl = document.getElementById("result");
         var formError = document.getElementById("form-error");
-        var api = window.qmRetirement;
+        var api = window.qmFsa;
 
         function esc(s) {
           return String(s)
@@ -203,8 +187,7 @@
           e.preventDefault();
           formError.hidden = true;
           var out = api.lookup({
-            account: document.getElementById("account").value,
-            age: document.getElementById("age").value,
+            carryover: document.getElementById("carryover").value,
             amount: document.getElementById("amount").value,
           });
           if (out.error) {
@@ -214,7 +197,7 @@
             return;
           }
           var html =
-            '<span class="pill public">Estimate</span>' +
+            '<span class="pill public">Official limit</span>' +
             "<h2 class='nums'>" +
             esc(out.headline) +
             "</h2>" +
@@ -222,18 +205,12 @@
             esc(out.humanLine) +
             "</p>" +
             "<ul>" +
-            "<li>Account: " +
-            esc(out.accountLabel) +
-            "</li>" +
-            "<li>Age at the end of 2026: " +
-            esc(String(out.age)) +
-            "</li>" +
-            "<li>Official cap: <strong class='nums'>" +
+            "<li>Official set-aside cap: <strong class='nums'>" +
             esc(out.limitLabel) +
-            "</strong></li>";
-          if (out.extraNote) {
-            html += "<li>" + esc(out.extraNote) + "</li>";
-          }
+            "</strong></li>" +
+            "<li>" +
+            esc(out.carryoverNote) +
+            "</li>";
           if (out.comparison) {
             html += "<li>" + esc(out.comparison) + "</li>";
           }
