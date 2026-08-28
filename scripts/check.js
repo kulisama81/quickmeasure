@@ -12,6 +12,7 @@ const mileage = require(path.join(root, "mileage/calculator.js"));
 const hsa = require(path.join(root, "hsa-limits/calculator.js"));
 const std = require(path.join(root, "standard-deduction/calculator.js"));
 const tax = require(path.join(root, "tax-brackets/calculator.js"));
+const fsa = require(path.join(root, "fsa-limits/calculator.js"));
 
 function hasDollar(text, n) {
   return String(text).indexOf("$" + n.toLocaleString("en-US")) !== -1 ||
@@ -242,6 +243,14 @@ assert.strictEqual(
   "https://sourcedcalc.com/tax-brackets/?x=1"
 );
 assert.strictEqual(
+  host.canonicalRedirect("https://quickmeasure-a3q.pages.dev/fsa-limits/"),
+  "https://sourcedcalc.com/fsa-limits/"
+);
+assert.strictEqual(
+  host.canonicalRedirect("https://quickmeasure-a3q.pages.dev/fsa-limits/?x=1"),
+  "https://sourcedcalc.com/fsa-limits/?x=1"
+);
+assert.strictEqual(
   host.canonicalRedirect("https://www.sourcedcalc.com/concrete-bags/"),
   "https://sourcedcalc.com/concrete-bags/"
 );
@@ -346,6 +355,7 @@ assert.ok(sitemap.includes("https://sourcedcalc.com/mileage/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/hsa-limits/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/standard-deduction/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/tax-brackets/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/fsa-limits/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/</loc>"));
 assert.ok(
   !/pages\.dev/.test(sitemap),
@@ -376,6 +386,7 @@ const htmlPages = [
     "https://sourcedcalc.com/standard-deduction/",
   ],
   ["tax-brackets/index.html", "https://sourcedcalc.com/tax-brackets/"],
+  ["fsa-limits/index.html", "https://sourcedcalc.com/fsa-limits/"],
 ];
 var GA4_ID = "G-3SB1LCNKZK";
 
@@ -634,6 +645,10 @@ function assertNoAds(html, name) {
   [
     "tax-brackets",
     fs.readFileSync(path.join(root, "tax-brackets/index.html"), "utf8"),
+  ],
+  [
+    "fsa-limits",
+    fs.readFileSync(path.join(root, "fsa-limits/index.html"), "utf8"),
   ],
 ].forEach(function (pair) {
   assertNoAds(pair[1], pair[0]);
@@ -1436,5 +1451,143 @@ assert.ok(
   homeHtml.includes("What tax rate the IRS uses at each income level (2026)")
 );
 assertNoAds(taxHtml, "tax-brackets");
+
+assert.strictEqual(fsa.YEAR, 2026);
+assert.strictEqual(fsa.SALARY_REDUCTION_LIMIT, 3400);
+assert.strictEqual(fsa.MAX_CARRYOVER, 680);
+assert.ok(fsa.SALARY_REDUCTION_LIMIT !== 3300, "do not use the 2025 FSA cap as 2026");
+assert.ok(fsa.MAX_CARRYOVER !== 660, "do not use the 2025 carryover as 2026");
+assert.ok(fsa.SALARY_REDUCTION_LIMIT !== 5000, "do not invent a dependent-care FSA dollar");
+assert.ok(fsa.MAX_CARRYOVER !== 340, "do not use the transit/parking fringe as FSA carryover");
+
+function fsaLookup(carryover, amount) {
+  return fsa.lookup({ carryover: carryover, amount: amount });
+}
+
+assert.strictEqual(fsaLookup("yes").limit, 3400);
+assert.strictEqual(fsaLookup("no").limit, 3400);
+assert.strictEqual(fsaLookup("yes").carryover, 680);
+assert.strictEqual(fsaLookup("no").carryover, 0);
+assert.strictEqual(fsaLookup("yes").carryoverAllowed, true);
+assert.strictEqual(fsaLookup("no").carryoverAllowed, false);
+assert.strictEqual(fsaLookup("yes").headline, "$3,400");
+assert.strictEqual(fsaLookup("no").headline, "$3,400");
+assert.ok(fsaLookup("yes").limit !== 3400 + 680, "do not add leftover to the set-aside cap");
+assert.ok(/\$680/.test(fsaLookup("yes").carryoverNote));
+assert.ok(/unused money, not extra you can set aside/i.test(fsaLookup("yes").carryoverNote));
+assert.ok(/not using the \$680 leftover number/.test(fsaLookup("no").carryoverNote));
+assert.ok(!/not using the \$680 leftover number/.test(fsaLookup("yes").carryoverNote));
+
+var fsaUnknown = fsa.lookup({ carryover: "grace-period" });
+assert.ok(fsaUnknown.error);
+assert.ok(/do not have an official dollar/i.test(fsaUnknown.error));
+assert.ok(fsaUnknown.limit == null);
+assert.ok(fsaUnknown.carryover == null);
+
+var fsaDepCare = fsa.lookup({ carryover: "dependent-care" });
+assert.ok(fsaDepCare.error);
+assert.ok(fsaDepCare.limit == null);
+
+var fsaMissing = fsa.lookup({});
+assert.ok(fsaMissing.error);
+assert.ok(/unused health FSA money carry/i.test(fsaMissing.error));
+
+var fsaUnder = fsaLookup("yes", 3000);
+assert.strictEqual(fsaUnder.over, false);
+assert.ok(/under this cap/i.test(fsaUnder.comparison));
+var fsaOver = fsaLookup("no", 3500);
+assert.strictEqual(fsaOver.over, true);
+assert.ok(/over this cap/i.test(fsaOver.comparison));
+assert.strictEqual(fsaLookup("yes", 3400).over, false);
+assert.strictEqual(fsaLookup("yes", 3401).over, true);
+
+assert.strictEqual(
+  fsa.HUMAN_LINE,
+  "Under this dollar, you are within the IRS cap for what you set aside from pay; over it, the IRS does not let that salary reduction go higher for the year."
+);
+assert.strictEqual(fsaLookup("yes").humanLine, fsa.HUMAN_LINE);
+assert.ok(/not tax advice/i.test(fsaLookup("yes").disclaimer));
+
+function fsaCopy(out) {
+  return [
+    out.headline,
+    out.humanLine,
+    out.carryoverNote,
+    out.comparison,
+    out.disclaimer,
+    out.limitLabel,
+    out.carryoverLabel,
+  ].join(" ");
+}
+
+[fsaLookup("yes"), fsaLookup("no"), fsaLookup("yes", 3500)].forEach(function (out) {
+  var copy = fsaCopy(out);
+  assert.ok(!/\$5,000/.test(copy), "do not invent a dependent-care FSA dollar");
+  assert.ok(!/\$340/.test(copy), "do not include transit/parking on this page");
+  assert.ok(!/QSEHRA/i.test(copy));
+  assert.ok(!/§\s*125/i.test(copy), "do not put §125 jargon in result copy");
+  assert.ok(/not tax advice/i.test(out.disclaimer));
+});
+
+const fsaHtml = fs.readFileSync(path.join(root, "fsa-limits/index.html"), "utf8");
+assert.ok(fsaHtml.includes("Last opened 2026-08-27"));
+assert.ok(
+  fsaHtml.includes(
+    "https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill"
+  )
+);
+assert.ok(fsaHtml.includes("https://www.irs.gov/pub/irs-drop/rp-25-32.pdf"));
+assert.ok(fsaHtml.includes("$3,400"));
+assert.ok(fsaHtml.includes("$680"));
+assert.ok(fsaHtml.includes(fsa.HUMAN_LINE));
+assert.ok(/out\.humanLine/.test(fsaHtml), "result must render the human line");
+assert.ok(/not tax advice/i.test(fsaHtml));
+assertLiveGa4(fsaHtml, "fsa-limits");
+assert.ok(!/G-[A-Z0-9]+/.test(fsaHtml.replace(/G-3SB1LCNKZK/g, "")));
+assert.ok(
+  !/\$5,000/.test(fsaHtml),
+  "do not invent a dependent-care FSA dollar on the page"
+);
+assert.ok(
+  !/\$340/.test(fsaHtml),
+  "do not include transit/parking $340 on this page"
+);
+assert.ok(!/QSEHRA/i.test(fsaHtml));
+assert.ok(!/§\s*125/i.test(fsaHtml), "no §125 jargon on the page");
+assert.ok(!/125\(i\)/.test(fsaHtml));
+assert.ok(/only use the \$680 leftover number if your plan/i.test(fsaHtml));
+assert.ok(/unused money, not extra you can set aside/i.test(fsaHtml));
+assert.ok(/do not look up dependent-care FSA, transit, parking/i.test(fsaHtml));
+assert.ok(!/adsbygoogle|affiliate|amazon\.com|shareasale/i.test(fsaHtml));
+
+const fsaLabels = [];
+fsaHtml.replace(/<label[^>]*>([\s\S]*?)<\/label>/g, function (_, inner) {
+  fsaLabels.push(inner.replace(/\s+/g, " ").trim());
+  return _;
+});
+assert.ok(fsaLabels.length >= 2, "FSA page needs field labels");
+fsaLabels.forEach(function (lab) {
+  assert.ok(
+    !/^(§125\(i\)|125\(i\)|cafeteria plan|salary reduction)$/i.test(lab),
+    "label must not be jargon-only: " + lab
+  );
+  assert.ok(!/§/.test(lab), "label must not use section-symbol jargon: " + lab);
+});
+assert.ok(
+  fsaLabels.some(function (l) {
+    return /unused health FSA money carry to next year/i.test(l);
+  })
+);
+assert.ok(
+  fsaLabels.some(function (l) {
+    return /set aside from pay this year/i.test(l);
+  })
+);
+
+assert.ok(homeHtml.includes("./fsa-limits/"));
+assert.ok(
+  homeHtml.includes("How much you can put in a health FSA this year (2026)")
+);
+assertNoAds(fsaHtml, "fsa-limits");
 
 console.log("ok");

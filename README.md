@@ -16,6 +16,7 @@ Public host: [https://sourcedcalc.com](https://sourcedcalc.com). The Cloudflare 
 - `/hsa-limits/` — 2026 HSA yearly contribution limits (Rev. Proc. 2025-19 + Pub 969 age-55 extra)
 - `/standard-deduction/` — 2026 IRS standard deduction (newsroom + Rev. Proc. 2025-32; extra if 65 or older or blind)
 - `/tax-brackets/` — 2026 IRS income-tax rates for just you / you and a spouse together (newsroom 10–37% dollars only)
+- `/fsa-limits/` — 2026 health FSA set-aside cap and leftover max when the plan lets unused money carry over (newsroom + Rev. Proc. 2025-32)
 
 ## Run locally
 
@@ -79,7 +80,7 @@ Canonicals, `sitemap.xml`, and `robots.txt` hardcode `https://sourcedcalc.com`. 
 
 ## What this site will not do
 
-- Invent rebate dollars, paint coverage, bag yields, mortgage caps, retirement contribution caps, mileage cents, HSA contribution limits, standard deduction amounts, or income-tax rates not on the cited official pages
+- Invent rebate dollars, paint coverage, bag yields, mortgage caps, retirement contribution caps, mileage cents, HSA contribution limits, standard deduction amounts, income-tax rates, or health FSA dollars not on the cited official pages
 - Capture leads, show ads, or set a cookie wall
 - Treat ZIP as your utility
 - Budget a federal HARP/HOMES $8,000 figure for Washington in 2026
