@@ -171,6 +171,49 @@ all.forEach((r) => {
   assert.ok(r.notIncluded.some((x) => /25C/.test(x)));
 });
 
+const waHtml = fs.readFileSync(
+  path.join(root, "wa-heat-pump-rebate/index.html"),
+  "utf8"
+);
+const waSources = waHtml.match(
+  /<section class="sources">[\s\S]*?<\/section>/
+);
+assert.ok(waSources, "heat pump page must have a sources block");
+assert.ok(
+  /Last opened \d{4}-\d{2}-\d{2}/.test(waSources[0]),
+  "heat pump sources block must include Last opened YYYY-MM-DD"
+);
+assert.ok(
+  waHtml.includes("Last opened 2026-08-29"),
+  "heat pump sources last-opened date is the day the official URLs were opened"
+);
+
+const waIncomeLabel = waHtml.match(
+  /<label for="income"[\s\S]*?>([\s\S]*?)<\/label\s*>/
+);
+assert.ok(waIncomeLabel, "heat pump income field must have a label");
+const waIncomeLabelText = waIncomeLabel[1].replace(/\s+/g, " ").trim();
+assert.ok(
+  !/AMI/.test(waIncomeLabelText),
+  "income label must not contain AMI: " + waIncomeLabelText
+);
+const waIncomeSelect = waHtml.match(
+  /<select id="income"[^>]*>([\s\S]*?)<\/select>/
+);
+assert.ok(waIncomeSelect, "heat pump income field must have a select");
+assert.ok(
+  !/AMI/.test(waIncomeSelect[1]),
+  "income select/options must not contain AMI"
+);
+const waFormNote = waHtml.match(
+  /<form class="card" id="form"[\s\S]*?<p class="note">([\s\S]*?)<\/p>/
+);
+assert.ok(waFormNote, "heat pump form must have a required note");
+assert.ok(
+  !/AMI/.test(waFormNote[1]),
+  "required note must not contain AMI"
+);
+
 const paintHtml = fs.readFileSync(path.join(root, "paint-coverage/index.html"), "utf8");
 assert.ok(paintHtml.includes("Last opened 2026-08-24"));
 assert.ok(paintHtml.includes("<th>Product</th>"));
