@@ -96,7 +96,7 @@
 
     if (!utility || !heat || !income) {
       return {
-        error: "Required: electric utility, current primary heat, and income vs AMI.",
+        error: "Required: electric utility, current primary heat, and household income.",
       };
     }
 

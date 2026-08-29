@@ -73,7 +73,7 @@
 
       <form class="card" id="form" novalidate>
         <p class="note">
-          Required: utility, current heat, and income vs AMI. Zip is optional.
+          Required: utility, current heat, and household income. Zip is optional.
         </p>
 
         <div class="field">
@@ -120,19 +120,23 @@
         </div>
 
         <div class="field">
-          <label for="income"
-            >Household income vs Area Median Income (AMI)</label
-          >
+          <label for="income">How does your household income compare to typical income in your area?</label>
           <select id="income" name="income" required>
             <option value="">Choose...</option>
-            <option value="under150">At or under 150% AMI</option>
-            <option value="over150">Over 150% AMI</option>
+            <option value="under150">
+              At or under 1.5 times typical local income
+            </option>
+            <option value="over150">
+              Over 1.5 times typical local income
+            </option>
             <option value="unknown">Unknown</option>
           </select>
           <span class="hint after"
-            >150% AMI is the state HEAR screen and Seattle Clean Heat bonus
-            upper bound. PSE Efficiency Boost and PSE’s $4,000 gas-switch rebate
-            use PSE’s own income table — not the same test.</span
+            >This is compared with typical household income for your area. The
+            state HEAR program and Seattle’s extra Clean Heat bonus use a cutoff
+            of 1.5 times that typical income. PSE’s extra Boost rebate and
+            PSE’s $4,000 gas-switch rebate use PSE’s own income table — not the
+            same test.</span
           >
         </div>
 
@@ -145,8 +149,9 @@
       <section class="sources">
         <h2>Sources</h2>
         <p class="note">
-          Figures on this page come only from these official links. If a dollar
-          is not on them, it is not on this calculator.
+          Figures on this page come only from these official links.
+          Last opened 2026-08-29. If a dollar is not on them, it is not on this
+          calculator.
         </p>
         <div class="table-wrap">
           <table>
