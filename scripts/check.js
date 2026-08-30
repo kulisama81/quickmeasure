@@ -1633,4 +1633,99 @@ assert.ok(
 );
 assertNoAds(fsaHtml, "fsa-limits");
 
+// Issue #24: #form-error must look like an error (.err), not a footnote (.disclaimer).
+function formErrorTag(html) {
+  return (
+    html.match(/<p\b[^>]*\bid=["']form-error["'][^>]*>/i) ||
+    html.match(/<p\b[^>]*id=["']form-error["'][^>]*>/i) ||
+    []
+  )[0];
+}
+
+function classList(tag) {
+  var m = tag && tag.match(/\bclass=["']([^"']*)["']/i);
+  return m ? m[1].trim().split(/\s+/).filter(Boolean) : [];
+}
+
+function calculatorHtmlPaths() {
+  return fs
+    .readdirSync(root)
+    .filter(function (name) {
+      var dir = path.join(root, name);
+      return (
+        fs.statSync(dir).isDirectory() &&
+        fs.existsSync(path.join(dir, "calculator.js")) &&
+        fs.existsSync(path.join(dir, "index.html"))
+      );
+    })
+    .map(function (name) {
+      return path.join(name, "index.html");
+    });
+}
+
+var formErrorPages = calculatorHtmlPaths().filter(function (rel) {
+  var html = fs.readFileSync(path.join(root, rel), "utf8");
+  return /id=["']form-error["']/.test(html);
+});
+assert.ok(
+  formErrorPages.length >= 10,
+  "expected every current calculator to have #form-error"
+);
+formErrorPages.forEach(function (rel) {
+  var html = fs.readFileSync(path.join(root, rel), "utf8");
+  var tag = formErrorTag(html);
+  assert.ok(tag, rel + " must have a <p id=\"form-error\">");
+  var classes = classList(tag);
+  assert.ok(
+    classes.indexOf("err") !== -1,
+    rel + " #form-error must use .err, got class=\"" + classes.join(" ") + "\""
+  );
+  assert.ok(
+    classes.indexOf("disclaimer") === -1,
+    rel + " #form-error must not use .disclaimer"
+  );
+});
+
+var stylesCss = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+assert.ok(
+  /\.err\s*\{[^}]*color:\s*var\(--danger\)/.test(stylesCss),
+  ".err must keep the danger text color"
+);
+
+// Cheap paint empty-submit: same path as the page script (calc → paint #form-error).
+var paintEmptySubmit = paint.calc({
+  length: "",
+  width: "",
+  height: "",
+  doors: "0",
+  windows: "0",
+  coats: "2",
+  coverage: "350",
+});
+assert.ok(paintEmptySubmit.error);
+assert.ok(/Enter length/.test(paintEmptySubmit.error));
+var paintFormError = {
+  hidden: true,
+  textContent: "",
+  className: classList(formErrorTag(paintHtml)).join(" "),
+};
+paintFormError.hidden = true;
+if (paintEmptySubmit.error) {
+  paintFormError.hidden = false;
+  paintFormError.textContent = paintEmptySubmit.error;
+}
+assert.strictEqual(paintFormError.hidden, false);
+assert.strictEqual(
+  paintFormError.textContent,
+  "Enter length, width, height, coats, and coverage greater than zero."
+);
+assert.ok(
+  /\berr\b/.test(paintFormError.className),
+  "empty paint submit must show #form-error as .err"
+);
+assert.ok(
+  !/\bdisclaimer\b/.test(paintFormError.className),
+  "empty paint submit must not paint #form-error as .disclaimer"
+);
+
 console.log("ok");
