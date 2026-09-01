@@ -569,6 +569,13 @@ assert.ok(missing.limit == null);
 var under = loan.lookup({ fips: "01001", units: 1, amount: 800000 });
 assert.strictEqual(under.over, false);
 assert.ok(/under this cap/i.test(under.comparison));
+var atCap = loan.lookup({ fips: "01001", units: 1, amount: 832750 });
+assert.strictEqual(atCap.over, false);
+assert.ok(/at this cap/i.test(atCap.comparison));
+assert.ok(
+  !/under this cap/i.test(atCap.comparison),
+  "exact Autauga 1-home cap must not say under"
+);
 var overAmt = loan.lookup({ fips: "01001", units: 1, amount: 900000 });
 assert.strictEqual(overAmt.over, true);
 assert.ok(/over this cap/i.test(overAmt.comparison));
@@ -784,6 +791,13 @@ function resultCopy(out) {
 var retUnder = ret("workplace", 49, 20000);
 assert.strictEqual(retUnder.over, false);
 assert.ok(/under this cap/i.test(retUnder.comparison));
+var retAt = ret("workplace", 49, 24500);
+assert.strictEqual(retAt.over, false);
+assert.ok(/at this cap/i.test(retAt.comparison));
+assert.ok(
+  !/under this cap/i.test(retAt.comparison),
+  "exact workplace cap must not say under"
+);
 var retOver = ret("workplace", 49, 25000);
 assert.strictEqual(retOver.over, true);
 assert.ok(/over this cap/i.test(retOver.comparison));
@@ -1538,6 +1552,13 @@ assert.ok(/unused health FSA money carry/i.test(fsaMissing.error));
 var fsaUnder = fsaLookup("yes", 3000);
 assert.strictEqual(fsaUnder.over, false);
 assert.ok(/under this cap/i.test(fsaUnder.comparison));
+var fsaAt = fsaLookup("yes", 3400);
+assert.strictEqual(fsaAt.over, false);
+assert.ok(/at this cap/i.test(fsaAt.comparison));
+assert.ok(
+  !/under this cap/i.test(fsaAt.comparison),
+  "exact $3,400 health FSA cap must not say under"
+);
 var fsaOver = fsaLookup("no", 3500);
 assert.strictEqual(fsaOver.over, true);
 assert.ok(/over this cap/i.test(fsaOver.comparison));
