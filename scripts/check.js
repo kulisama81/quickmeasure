@@ -492,6 +492,45 @@ assert.throws(function () {
 var notFound = fs.readFileSync(path.join(root, "404.html"), "utf8");
 assert.ok(notFound.includes("Sourced Calc"));
 assert.ok(notFound.indexOf("Quick Measure") === -1);
+assertLiveGa4(notFound, "404.html");
+assert.ok(
+  /<a class="skip" href="#main">Skip to content<\/a>/.test(notFound),
+  "404.html must have skip-to-content like other templates"
+);
+assert.ok(
+  /<main id="main"/.test(notFound),
+  "404.html must expose #main for the skip link"
+);
+assert.ok(
+  /src="\/ga\.js"/.test(notFound),
+  "404.html must load /ga.js from the site root so nested bogus paths still work"
+);
+assertNoAds(notFound, "404.html");
+
+// Issue #23: a request to a nonexistent path must (a) return 404 and
+// (b) include G-3SB1LCNKZK. Fails on the pre-fix 404 template (no GA).
+execFileSync(
+  process.execPath,
+  [
+    "--input-type=module",
+    "-e",
+    'import w from "./_worker.js";' +
+      "import fs from \"fs\";" +
+      "const html=fs.readFileSync(\"404.html\",\"utf8\");" +
+      "const env={ASSETS:{fetch:async(req)=>{" +
+      "const p=new URL(req.url).pathname;" +
+      "if(p===\"/\"||p===\"/index.html\") return new Response(\"ok\");" +
+      "return new Response(html,{status:404,headers:{\"content-type\":\"text/html; charset=utf-8\"}});" +
+      "}}};" +
+      'const r=await w.fetch(new Request("https://sourcedcalc.com/this-page-does-not-exist-audit-404"),env);' +
+      "if(r.status!==404) throw new Error(\"expected 404, got \"+r.status);" +
+      "const body=await r.text();" +
+      "if(!body.includes(\"G-3SB1LCNKZK\")) throw new Error(\"404 HTML missing G-3SB1LCNKZK\");" +
+      "const home=await w.fetch(new Request(\"https://sourcedcalc.com/\"),env);" +
+      "if(home.status!==200) throw new Error(\"home should stay 200, got \"+home.status);",
+  ],
+  { cwd: root }
+);
 
 assert.strictEqual(concrete.YIELD[40], 0.3);
 assert.strictEqual(concrete.YIELD[60], 0.45);
