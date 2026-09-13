@@ -172,9 +172,13 @@
     var over = amount !== null ? amount > limit : null;
     var comparison = null;
     if (amount !== null) {
-      comparison =
-        formatDollar(amount) +
-        (over ? " is over this cap." : " is under this cap.");
+      if (amount > limit) {
+        comparison = formatDollar(amount) + " is over this cap.";
+      } else if (amount === limit) {
+        comparison = formatDollar(amount) + " is at this cap.";
+      } else {
+        comparison = formatDollar(amount) + " is under this cap.";
+      }
     }
 
     return {
