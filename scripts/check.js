@@ -1788,4 +1788,61 @@ assert.ok(
   "empty paint submit must not paint #form-error as .disclaimer"
 );
 
+// Issue #32: money-page <title> leads with the searched phrase; <h1> stays put.
+function htmlTitle(html) {
+  var m = html.match(/<title>([\s\S]*?)<\/title>/i);
+  assert.ok(m, "page must have a <title>");
+  return m[1].replace(/\s+/g, " ").trim();
+}
+
+function htmlH1(html) {
+  var m = html.match(/<h1>[\s\S]*?<\/h1>/);
+  assert.ok(m, "page must have an <h1>");
+  return m[0];
+}
+
+[
+  {
+    file: "hsa-limits/index.html",
+    html: hsaHtml,
+    phrase: "hsa contribution limit",
+    h1: "<h1>How much you can put in an HSA this year (2026)</h1>",
+  },
+  {
+    file: "mileage/index.html",
+    html: mileHtml,
+    phrase: "mileage rate",
+    h1: "<h1>How much the IRS says one mile is worth (2026)</h1>",
+  },
+  {
+    file: "retirement-limits/index.html",
+    html: retHtml,
+    phrase: "contribution limit",
+    h1: "<h1>How much you can put in a 401(k) or IRA this year (2026)</h1>",
+  },
+  {
+    file: "standard-deduction/index.html",
+    html: stdHtml,
+    phrase: "standard deduction",
+    h1: "<h1>How much the IRS lets most people subtract before tax (2026)</h1>",
+  },
+  {
+    file: "mortgage-limit/index.html",
+    html: loanHtml,
+    phrase: "conforming loan limit",
+    h1: "<h1>How big a normal mortgage can be (2026)</h1>",
+  },
+].forEach(function (page) {
+  var title = htmlTitle(page.html);
+  assert.ok(
+    title.toLowerCase().indexOf(page.phrase) !== -1,
+    page.file + " <title> must contain \"" + page.phrase + "\": " + title
+  );
+  assert.strictEqual(
+    htmlH1(page.html),
+    page.h1,
+    page.file + " <h1> must stay byte-identical"
+  );
+});
+
 console.log("ok");
