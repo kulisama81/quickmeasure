@@ -1,0 +1,41 @@
+# Production Pages deploy after merge to main (issue #30).
+# Project: quickmeasure → sourcedcalc.com
+# Secrets (repo Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN  — Account Cloudflare Pages Edit
+#   CLOUDFLARE_ACCOUNT_ID — Cloudflare account id
+# Token lives in Actions secrets only. Humans merge.
+name: Pages deploy
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: pages-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: check.js
+        run: npm test
+      - name: Deploy Cloudflare Pages (quickmeasure)
+        run: npm run pages:deploy -- --project-name=quickmeasure --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

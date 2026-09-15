@@ -1,0 +1,30 @@
+# Required PR check for Sourced Calc (issue #30).
+# Branch protection: mark the "check.js" job required. Humans merge.
+name: PR CI
+
+on:
+  pull_request:
+
+concurrency:
+  group: pr-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check.js
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: check.js
+        run: npm test
