@@ -1,6 +1,7 @@
 .git
 .gitignore
 **/.DS_Store
+.github
 wrangler.jsonc
 package.json
 package-lock.json

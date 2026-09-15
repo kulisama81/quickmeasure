@@ -37,6 +37,21 @@ Then open the URL it prints (usually `http://localhost:3000`).
 
 There is no site build step. `package.json` pins wrangler for deploys only.
 
+## Check
+
+```bash
+npm test
+# same as: node scripts/check.js
+```
+
+Source yields, dates, URLs, and 404 GA `G-3SB1LCNKZK`. Same command as the required PR job.
+
+## GitHub Actions
+
+- **PRs:** `.github/workflows/pr-ci.yml` runs `npm ci` then `npm test`. Mark the **check.js** job required under branch protection. No auto-merge.
+- **main:** `.github/workflows/pages-deploy.yml` runs the same check, then `npm run pages:deploy` to Pages project `quickmeasure` (`sourcedcalc.com`).
+- **Repo secrets** (Settings → Secrets and variables → Actions): `CLOUDFLARE_API_TOKEN` (Account Cloudflare Pages Edit) and `CLOUDFLARE_ACCOUNT_ID`. Do not commit tokens.
+
 ## Cloudflare Pages
 
 Connect the GitHub repo as a **Pages** project named `quickmeasure`.

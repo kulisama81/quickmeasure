@@ -369,8 +369,70 @@ assert.strictEqual(
   "do not loosen the wrangler pin"
 );
 assert.strictEqual(pkg.scripts["pages:deploy"], "wrangler pages deploy .");
+assert.strictEqual(
+  pkg.scripts.test,
+  "node scripts/check.js",
+  "npm test must run the existing check"
+);
 assert.ok(
   fs.readFileSync(path.join(root, ".npmrc"), "utf8").includes("ignore-scripts=true")
+);
+
+const assetsIgnore = fs.readFileSync(path.join(root, ".assetsignore"), "utf8");
+assert.ok(
+  /(^|\n)\.github(\n|$)/.test(assetsIgnore),
+  ".github must not publish as a Pages asset"
+);
+
+const prCi = fs.readFileSync(path.join(root, ".github/workflows/pr-ci.yml"), "utf8");
+assert.ok(/pull_request/.test(prCi), "PR CI must run on pull_request");
+assert.ok(/npm ci/.test(prCi), "PR CI must use npm ci");
+assert.ok(/npm test/.test(prCi), "PR CI must run npm test (check.js)");
+assert.ok(
+  !/npx\s+(--yes\s+)?wrangler@/.test(prCi),
+  "PR CI must not float wrangler via npx"
+);
+assert.ok(
+  !/enableAutoMerge|gh pr merge --auto/.test(prCi),
+  "do not add an automatic merge job"
+);
+
+const pagesDeployYml = fs.readFileSync(
+  path.join(root, ".github/workflows/pages-deploy.yml"),
+  "utf8"
+);
+assert.ok(
+  /branches:[\s\S]*\bmain\b/.test(pagesDeployYml),
+  "Pages deploy must run on main"
+);
+assert.ok(/npm ci/.test(pagesDeployYml), "Pages deploy must use npm ci");
+assert.ok(
+  /npm test/.test(pagesDeployYml),
+  "Pages deploy must run check.js before wrangler"
+);
+assert.ok(
+  /npm run pages:deploy/.test(pagesDeployYml),
+  "Pages deploy must use the pinned pages:deploy script"
+);
+assert.ok(
+  /--project-name=quickmeasure/.test(pagesDeployYml),
+  "Pages deploy must target project quickmeasure"
+);
+assert.ok(
+  /secrets\.CLOUDFLARE_API_TOKEN/.test(pagesDeployYml),
+  "Pages deploy must read CLOUDFLARE_API_TOKEN from Actions secrets"
+);
+assert.ok(
+  /secrets\.CLOUDFLARE_ACCOUNT_ID/.test(pagesDeployYml),
+  "Pages deploy must read CLOUDFLARE_ACCOUNT_ID from Actions secrets"
+);
+assert.ok(
+  !/npx\s+(--yes\s+)?wrangler@/.test(pagesDeployYml),
+  "Pages deploy must not float wrangler via npx"
+);
+assert.ok(
+  !/enableAutoMerge|gh pr merge --auto/.test(pagesDeployYml),
+  "do not add an automatic merge job"
 );
 
 const { execFileSync } = require("child_process");

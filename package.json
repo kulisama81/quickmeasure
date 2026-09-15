@@ -2,6 +2,7 @@
   "name": "quickmeasure",
   "private": true,
   "scripts": {
+    "test": "node scripts/check.js",
     "pages:deploy": "wrangler pages deploy ."
   },
   "devDependencies": {
