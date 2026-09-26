@@ -1907,4 +1907,123 @@ function htmlH1(html) {
   );
 });
 
+// Issue #25: muted text on page gray must meet WCAG AA (4.5:1).
+// Today's tokens --muted #6b7280 on --bg #f3f4f6 are 4.39:1 and fail.
+function normalizeHex(hex) {
+  hex = String(hex).trim().toLowerCase();
+  if (/^#[0-9a-f]{3}$/.test(hex)) {
+    return (
+      "#" +
+      hex[1] +
+      hex[1] +
+      hex[2] +
+      hex[2] +
+      hex[3] +
+      hex[3]
+    );
+  }
+  assert.ok(/^#[0-9a-f]{6}$/.test(hex), "expected #rrggbb, got " + hex);
+  return hex;
+}
+
+function hexToRgb(hex) {
+  hex = normalizeHex(hex).slice(1);
+  return [
+    parseInt(hex.slice(0, 2), 16),
+    parseInt(hex.slice(2, 4), 16),
+    parseInt(hex.slice(4, 6), 16),
+  ];
+}
+
+function srgbChannel(c) {
+  c = c / 255;
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+function relativeLuminance(hex) {
+  var rgb = hexToRgb(hex);
+  return (
+    0.2126 * srgbChannel(rgb[0]) +
+    0.7152 * srgbChannel(rgb[1]) +
+    0.0722 * srgbChannel(rgb[2])
+  );
+}
+
+function contrastRatio(fg, bg) {
+  var a = relativeLuminance(fg);
+  var b = relativeLuminance(bg);
+  var lighter = Math.max(a, b);
+  var darker = Math.min(a, b);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function cssCustomPropHex(css, name) {
+  var m = css.match(new RegExp("--" + name + "\\s*:\\s*(#[0-9a-fA-F]{3,8})"));
+  assert.ok(m, "styles.css must define --" + name + " as a hex color");
+  return normalizeHex(m[1]);
+}
+
+function cssRuleDecl(css, selector, prop) {
+  var escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  var block = css.match(new RegExp(escaped + "\\s*\\{([^}]+)\\}"));
+  assert.ok(block, selector + " rule missing");
+  var m = block[1].match(new RegExp("(?:^|;)\\s*" + prop + "\\s*:\\s*([^;]+);"));
+  assert.ok(m, selector + " must set " + prop);
+  return m[1].trim();
+}
+
+function resolveCssColor(value, css) {
+  var varMatch = value.match(/^var\(\s*--([a-z0-9-]+)\s*\)$/i);
+  if (varMatch) return cssCustomPropHex(css, varMatch[1]);
+  if (/^#/.test(value)) return normalizeHex(value);
+  assert.fail("unresolved color " + value);
+}
+
+assert.ok(
+  contrastRatio("#6b7280", "#f3f4f6") < 4.5,
+  "fixture: today's #6b7280 on #f3f4f6 must stay a known AA fail (4.39:1)"
+);
+assert.ok(
+  Math.abs(contrastRatio("#6b7280", "#f3f4f6") - 4.39) < 0.01,
+  "fixture: today's muted-on-gray ratio is 4.39:1"
+);
+
+var pageBg = resolveCssColor(cssRuleDecl(stylesCss, "body", "background"), stylesCss);
+var ledeFg = resolveCssColor(cssRuleDecl(stylesCss, ".lede", "color"), stylesCss);
+var footerFg = resolveCssColor(
+  cssRuleDecl(stylesCss, ".site-footer", "color"),
+  stylesCss
+);
+var ledeContrast = contrastRatio(ledeFg, pageBg);
+var footerContrast = contrastRatio(footerFg, pageBg);
+
+assert.ok(
+  ledeContrast >= 4.5,
+  ".lede on page background is " +
+    ledeContrast.toFixed(2) +
+    ":1 (" +
+    ledeFg +
+    " on " +
+    pageBg +
+    "); WCAG AA needs ≥4.5:1"
+);
+assert.ok(
+  footerContrast >= 4.5,
+  ".site-footer on page background is " +
+    footerContrast.toFixed(2) +
+    ":1 (" +
+    footerFg +
+    " on " +
+    pageBg +
+    "); WCAG AA needs ≥4.5:1"
+);
+assert.ok(
+  !(ledeFg === "#6b7280" && pageBg === "#f3f4f6"),
+  ".lede must not keep today's failing #6b7280 on #f3f4f6"
+);
+assert.ok(
+  !(footerFg === "#6b7280" && pageBg === "#f3f4f6"),
+  ".site-footer must not keep today's failing #6b7280 on #f3f4f6"
+);
+
 console.log("ok");
