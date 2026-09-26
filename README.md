@@ -48,9 +48,9 @@ Source yields, dates, URLs, and 404 GA `G-3SB1LCNKZK`. Same command as the requi
 
 ## GitHub Actions
 
-- **PRs:** `.github/workflows/pr-ci.yml` runs `npm ci` then `npm test`. Mark the **check.js** job required under branch protection. No auto-merge.
-- **main:** `.github/workflows/pages-deploy.yml` runs the same check, then `npm run pages:deploy` to Pages project `quickmeasure` (`sourcedcalc.com`).
-- **Repo secrets** (Settings → Secrets and variables → Actions): `CLOUDFLARE_API_TOKEN` (Account Cloudflare Pages Edit) and `CLOUDFLARE_ACCOUNT_ID`. Do not commit tokens.
+- **PRs:** `.github/workflows/pr-ci.yml` runs `npm ci`, then `npm test`, then the pages-release self-test. Mark the **check.js** job required under branch protection. No auto-merge.
+- **main:** `.github/workflows/pages-deploy.yml` runs those tests, deploys Direct Upload project `quickmeasure` with the merge SHA, smoke-checks https://sourcedcalc.com, and rolls back if the smoke check fails.
+- Secrets, token scopes, hand rollback, and how to turn auto-deploy off: [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Cloudflare Pages
 
