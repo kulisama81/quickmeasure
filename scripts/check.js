@@ -2026,4 +2026,128 @@ assert.ok(
   ".site-footer must not keep today's failing #6b7280 on #f3f4f6"
 );
 
+// Issue #22: browsers request /favicon.ico and Apple touch icons.
+// Every HTML page must link those icons, and each referenced file must exist.
+function walkHtml(dir, acc) {
+  fs.readdirSync(dir).forEach(function (name) {
+    if (name === "node_modules" || name === ".git" || name === ".wrangler") return;
+    var full = path.join(dir, name);
+    if (fs.statSync(full).isDirectory()) walkHtml(full, acc);
+    else if (name.slice(-5).toLowerCase() === ".html") acc.push(full);
+  });
+  return acc;
+}
+
+function linkAttr(tag, name) {
+  var m = tag.match(
+    new RegExp("\\b" + name + "\\s*=\\s*[\"']([^\"']*)[\"']", "i")
+  );
+  return m ? m[1] : "";
+}
+
+function relTokens(tag) {
+  return linkAttr(tag, "rel")
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function isIconRel(tokens) {
+  return (
+    tokens.indexOf("icon") !== -1 || tokens.indexOf("apple-touch-icon") !== -1
+  );
+}
+
+function resolveSiteHref(fromFile, href) {
+  var page = path.relative(root, fromFile);
+  assert.ok(href, page + " icon link is missing href");
+  assert.ok(
+    href.indexOf("//") !== 0 && !/^[a-z][a-z0-9+.-]*:/i.test(href),
+    page + " icon href must be a local file: " + href
+  );
+  var full =
+    href.charAt(0) === "/"
+      ? path.join(root, href.replace(/^\/+/, ""))
+      : path.resolve(path.dirname(fromFile), href);
+  var rel = path.relative(root, full);
+  assert.ok(
+    rel &&
+      rel !== ".." &&
+      rel.indexOf(".." + path.sep) !== 0 &&
+      !path.isAbsolute(rel),
+    page + " icon href escapes the site: " + href
+  );
+  return full;
+}
+
+function assertImageBytes(file) {
+  var rel = path.relative(root, file);
+  assert.ok(fs.existsSync(file), "referenced icon file is missing: " + rel);
+  var buf = fs.readFileSync(file);
+  assert.ok(buf.length > 0, "referenced icon file is empty: " + rel);
+  var ext = path.extname(file).toLowerCase();
+  if (ext === ".png") {
+    assert.ok(
+      buf[0] === 0x89 && buf.toString("ascii", 1, 4) === "PNG",
+      rel + " must be a PNG image"
+    );
+  } else if (ext === ".ico") {
+    assert.strictEqual(buf.readUInt16LE(0), 0, rel + " ICO reserved field");
+    assert.strictEqual(buf.readUInt16LE(2), 1, rel + " must be an ICO image");
+    assert.ok(buf.readUInt16LE(4) >= 1, rel + " ICO must contain an image");
+  } else if (ext === ".svg") {
+    assert.ok(/<svg[\s>]/i.test(buf.toString("utf8")), rel + " must be an SVG image");
+  } else {
+    assert.fail(rel + " is not an image favicon (.ico, .png, or .svg)");
+  }
+}
+
+var faviconHtmlPages = walkHtml(root, []);
+var htmlRels = faviconHtmlPages.map(function (file) {
+  return path.relative(root, file);
+});
+assert.ok(htmlRels.indexOf("index.html") !== -1, "home page must be checked");
+assert.ok(htmlRels.indexOf("404.html") !== -1, "404 page must be checked");
+calculatorHtmlPaths().forEach(function (rel) {
+  assert.ok(htmlRels.indexOf(rel) !== -1, "calculator page must be checked: " + rel);
+});
+
+faviconHtmlPages.forEach(function (file) {
+  var relPage = path.relative(root, file);
+  var html = fs.readFileSync(file, "utf8");
+  var tags = html.match(/<link\b[^>]*>/gi) || [];
+  var iconLinks = tags.filter(function (tag) {
+    return isIconRel(relTokens(tag));
+  });
+  assert.ok(iconLinks.length > 0, relPage + " must reference a favicon");
+  var sawIco = false;
+  var sawApple = false;
+  var sawApple180 = false;
+  iconLinks.forEach(function (tag) {
+    var full = resolveSiteHref(file, linkAttr(tag, "href"));
+    assertImageBytes(full);
+    var base = path.basename(full);
+    var tokens = relTokens(tag);
+    if (tokens.indexOf("icon") !== -1 && base === "favicon.ico") sawIco = true;
+    if (tokens.indexOf("apple-touch-icon") !== -1 && base === "apple-touch-icon.png") {
+      sawApple = true;
+    }
+    if (
+      tokens.indexOf("apple-touch-icon") !== -1 &&
+      base === "apple-touch-icon-180x180.png"
+    ) {
+      sawApple180 = true;
+    }
+  });
+  assert.ok(sawIco, relPage + " must link favicon.ico");
+  assert.ok(sawApple, relPage + " must link apple-touch-icon.png");
+  assert.ok(sawApple180, relPage + " must link apple-touch-icon-180x180.png");
+});
+
+["favicon.ico", "apple-touch-icon.png", "apple-touch-icon-180x180.png"].forEach(
+  function (name) {
+    assertImageBytes(path.join(root, name));
+  }
+);
+
 console.log("ok");
