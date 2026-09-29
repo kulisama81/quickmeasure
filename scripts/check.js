@@ -1909,9 +1909,10 @@ function htmlH1(html) {
 
 // Issue #39: mortgage-limit SERP title and meta stay exact, short, and singular.
 // Reverting either string fails this check.
-var LOAN_SERP_TITLE = "Look up the official 2026 county conforming loan limit";
+var LOAN_SERP_TITLE =
+  "2026 conforming loan limit by county (FHFA) · Sourced Calc";
 var LOAN_SERP_DESCRIPTION =
-  "Look up the official 2026 conforming loan limit by county. Under that dollar, a normal mortgage. Over it, a harder loan. Estimate, not a quote.";
+  "Look up your county's 2026 conforming loan limit from the official FHFA file: $832,750 in most counties, up to $1,249,125 in high-cost areas.";
 var LOAN_SERP_TITLE_BEFORE =
   "2026 conforming loan limit — how big a normal mortgage can be · Sourced Calc";
 var LOAN_SERP_DESCRIPTION_BEFORE =
