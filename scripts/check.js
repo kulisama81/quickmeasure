@@ -2212,4 +2212,144 @@ faviconHtmlPages.forEach(function (file) {
   }
 );
 
+// Issue #41: /fsa-limits/ and /tax-brackets/ SERP title and meta stay exact.
+// Reverting either string fails this check. H1 and canonical stay byte-identical.
+// Self-contained so a parallel lede check (#42) can land beside it.
+(function () {
+  function titleTags(html) {
+    return html.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+  }
+
+  function titleText(html) {
+    var tags = titleTags(html);
+    assert.strictEqual(tags.length, 1, "expected exactly one <title>");
+    var m = tags[0].match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+    assert.ok(m, "page must have a <title>");
+    return m[1].replace(/\s+/g, " ").trim();
+  }
+
+  function metaDescriptionTags(html) {
+    return (html.match(/<meta\b[^>]*>/gi) || []).filter(function (tag) {
+      return /\bname\s*=\s*["']description["']/i.test(tag);
+    });
+  }
+
+  function metaContentAttr(tag) {
+    var m = tag.match(/\bcontent\s*=\s*"([^"]*)"/i);
+    if (!m) m = tag.match(/\bcontent\s*=\s*'([^']*)'/i);
+    assert.ok(m, "meta description is missing a content attribute");
+    return m[1].replace(/\s+/g, " ").trim();
+  }
+
+  function h1Tag(html) {
+    var tags = html.match(/<h1>[\s\S]*?<\/h1>/g) || [];
+    assert.strictEqual(tags.length, 1, "expected exactly one <h1>");
+    return tags[0];
+  }
+
+  function canonicalHref(html) {
+    var tags = (html.match(/<link\b[^>]*>/gi) || []).filter(function (tag) {
+      return /\brel\s*=\s*["']canonical["']/i.test(tag);
+    });
+    assert.strictEqual(tags.length, 1, "expected exactly one canonical link");
+    var m = tags[0].match(/\bhref\s*=\s*"([^"]*)"/i);
+    if (!m) m = tags[0].match(/\bhref\s*=\s*'([^']*)'/i);
+    assert.ok(m, "canonical link is missing href");
+    return m[1];
+  }
+
+  [
+    {
+      file: "fsa-limits/index.html",
+      title: "2026 health FSA limit: $3,400 (IRS) \u00B7 Sourced Calc",
+      titleLength: 50,
+      titleBefore:
+        "How much you can put in a health FSA this year (2026) \u00B7 Sourced Calc",
+      description:
+        "Look up the official 2026 health FSA cap: $3,400 set aside from pay. If your plan allows it, up to $680 of unused money can carry over. Not tax advice.",
+      descriptionLength: 151,
+      descriptionBefore:
+        "Look up the official 2026 health FSA cap for what you set aside from pay, and the leftover max if your plan lets unused money carry to next year. Not tax advice.",
+      phrase: "fsa limit",
+      h1: "<h1>How much you can put in a health FSA this year (2026)</h1>",
+      canonical: "https://sourcedcalc.com/fsa-limits/",
+    },
+    {
+      file: "tax-brackets/index.html",
+      title: "2026 federal income tax brackets (IRS) \u00B7 Sourced Calc",
+      titleLength: 53,
+      titleBefore:
+        "What tax rate the IRS uses at each income level (2026) \u00B7 Sourced Calc",
+      description:
+        "Look up the official 2026 IRS tax rate for your income, from 10% to 37%, for just you or you and a spouse together. Not tax advice.",
+      descriptionLength: 131,
+      descriptionBefore:
+        "Look up the official 2026 IRS income-tax rate for just you or you and a spouse together. Official figure lookup, not tax advice.",
+      phrase: "tax brackets",
+      h1: "<h1>What tax rate the IRS uses at each income level (2026)</h1>",
+      canonical: "https://sourcedcalc.com/tax-brackets/",
+    },
+  ].forEach(function (page) {
+    var html = fs.readFileSync(path.join(root, page.file), "utf8");
+    var titles = titleTags(html);
+    assert.strictEqual(
+      titles.length,
+      1,
+      page.file + " must have exactly one <title>, found " + titles.length
+    );
+    var title = titleText(html);
+    assert.strictEqual(page.title.length, page.titleLength);
+    assert.strictEqual(title, page.title, page.file + " <title>");
+    assert.notStrictEqual(title, page.titleBefore);
+    assert.strictEqual(
+      title.charCodeAt(title.indexOf("\u00B7")),
+      0x00b7,
+      page.file + " title middle dot must be U+00B7"
+    );
+    assert.ok(
+      title.length <= 60,
+      page.file + " <title> is " + title.length + " characters; max 60"
+    );
+    assert.ok(
+      title.toLowerCase().indexOf(page.phrase) !== -1,
+      page.file + ' <title> must contain "' + page.phrase + '": ' + title
+    );
+
+    var descTags = metaDescriptionTags(html);
+    assert.strictEqual(
+      descTags.length,
+      1,
+      page.file +
+        " must have exactly one meta description, found " +
+        descTags.length
+    );
+    var description = metaContentAttr(descTags[0]);
+    assert.strictEqual(page.description.length, page.descriptionLength);
+    assert.strictEqual(
+      description,
+      page.description,
+      page.file + " meta description"
+    );
+    assert.notStrictEqual(description, page.descriptionBefore);
+    assert.ok(
+      description.length <= 155,
+      page.file +
+        " meta description is " +
+        description.length +
+        " characters; max 155"
+    );
+
+    assert.strictEqual(
+      h1Tag(html),
+      page.h1,
+      page.file + " <h1> must stay byte-identical"
+    );
+    assert.strictEqual(
+      canonicalHref(html),
+      page.canonical,
+      page.file + " canonical URL must stay unchanged"
+    );
+  });
+})();
+
 console.log("ok");
