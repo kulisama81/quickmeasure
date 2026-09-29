@@ -2352,4 +2352,221 @@ faviconHtmlPages.forEach(function (file) {
   });
 })();
 
+// Issue #42: official 2026 dollars in the .lede, above the form.
+// Self-contained so a parallel title/meta check can land beside this block.
+(function () {
+  function h1Tag(html) {
+    var m = html.match(/<h1>[\s\S]*?<\/h1>/);
+    assert.ok(m, "page must have an <h1>");
+    return m[0];
+  }
+
+  function ledeTextBeforeForm(html, page) {
+    var formAt = html.indexOf("<form");
+    assert.ok(formAt !== -1, page + " must include <form");
+    var beforeForm = html.slice(0, formAt);
+    var m = beforeForm.match(/<p class="lede">([\s\S]*?)<\/p>/);
+    assert.ok(m, page + " .lede must appear in the HTML before <form");
+    return m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  var hsaPage = fs.readFileSync(
+    path.join(root, "hsa-limits/index.html"),
+    "utf8"
+  );
+  assert.strictEqual(
+    h1Tag(hsaPage),
+    "<h1>How much you can put in an HSA this year (2026)</h1>",
+    "hsa-limits <h1> must stay byte-identical"
+  );
+  var hsaSelf = hsa.formatDollar(hsa.SELF_BASE);
+  var hsaFamily = hsa.formatDollar(hsa.FAMILY_BASE);
+  var hsaExtra = hsa.formatDollar(hsa.AGE_55_EXTRA);
+  var hsaLede = ledeTextBeforeForm(hsaPage, "hsa-limits");
+  var hsaSentence =
+    "For " +
+    hsa.YEAR +
+    " the IRS cap is " +
+    hsaSelf +
+    " if the plan covers just you, or " +
+    hsaFamily +
+    " for you and family. If you are 55 or older, add " +
+    hsaExtra +
+    ".";
+  assert.ok(
+    hsaLede.indexOf(hsaSelf) !== -1 &&
+      hsaLede.indexOf(hsaFamily) !== -1 &&
+      hsaLede.indexOf(hsaExtra) !== -1,
+    "hsa-limits .lede before <form must contain caps from calculator.js via formatDollar: " +
+      [hsaSelf, hsaFamily, hsaExtra].join(", ") +
+      " — lede: " +
+      hsaLede
+  );
+  assert.strictEqual(
+    hsaLede.indexOf(hsaSentence),
+    0,
+    "hsa-limits .lede must start with the official cap sentence. Got: " + hsaLede
+  );
+
+  assert.deepStrictEqual(hsa.lookup({ coverage: "self", age55: "no" }), {
+    year: 2026,
+    coverage: "self",
+    coverageLabel: "Just you",
+    age55: false,
+    base: 4400,
+    extra: 0,
+    limit: 4400,
+    limitLabel: "$4,400",
+    minDeductible: 1700,
+    maxOop: 8500,
+    extraNote: null,
+    planNote:
+      "To use an HSA, the plan has to have a yearly deductible of at least $1,700, and yearly out-of-pocket costs (not counting premiums) cannot go past $8,500.",
+    humanLine: "How much you can put in an HSA this year",
+    headline: "$4,400",
+    disclaimer: "This is not tax advice.",
+  });
+  assert.deepStrictEqual(hsa.lookup({ coverage: "self", age55: "yes" }), {
+    year: 2026,
+    coverage: "self",
+    coverageLabel: "Just you",
+    age55: true,
+    base: 4400,
+    extra: 1000,
+    limit: 5400,
+    limitLabel: "$5,400",
+    minDeductible: 1700,
+    maxOop: 8500,
+    extraNote:
+      "Extra $1,000 because you are 55 or older at year-end. That extra is from IRS Publication 969.",
+    planNote:
+      "To use an HSA, the plan has to have a yearly deductible of at least $1,700, and yearly out-of-pocket costs (not counting premiums) cannot go past $8,500.",
+    humanLine: "How much you can put in an HSA this year",
+    headline: "$5,400",
+    disclaimer: "This is not tax advice.",
+  });
+  assert.deepStrictEqual(hsa.lookup({ coverage: "family", age55: "no" }), {
+    year: 2026,
+    coverage: "family",
+    coverageLabel: "You and family",
+    age55: false,
+    base: 8750,
+    extra: 0,
+    limit: 8750,
+    limitLabel: "$8,750",
+    minDeductible: 3400,
+    maxOop: 17000,
+    extraNote: null,
+    planNote:
+      "To use an HSA, the plan has to have a yearly deductible of at least $3,400, and yearly out-of-pocket costs (not counting premiums) cannot go past $17,000.",
+    humanLine: "How much you can put in an HSA this year",
+    headline: "$8,750",
+    disclaimer: "This is not tax advice.",
+  });
+  assert.deepStrictEqual(hsa.lookup({ coverage: "family", age55: "yes" }), {
+    year: 2026,
+    coverage: "family",
+    coverageLabel: "You and family",
+    age55: true,
+    base: 8750,
+    extra: 1000,
+    limit: 9750,
+    limitLabel: "$9,750",
+    minDeductible: 3400,
+    maxOop: 17000,
+    extraNote:
+      "Extra $1,000 because you are 55 or older at year-end. That extra is from IRS Publication 969.",
+    planNote:
+      "To use an HSA, the plan has to have a yearly deductible of at least $3,400, and yearly out-of-pocket costs (not counting premiums) cannot go past $17,000.",
+    humanLine: "How much you can put in an HSA this year",
+    headline: "$9,750",
+    disclaimer: "This is not tax advice.",
+  });
+
+  var fsaPage = fs.readFileSync(
+    path.join(root, "fsa-limits/index.html"),
+    "utf8"
+  );
+  assert.strictEqual(
+    h1Tag(fsaPage),
+    "<h1>How much you can put in a health FSA this year (2026)</h1>",
+    "fsa-limits <h1> must stay byte-identical"
+  );
+  var fsaCap = fsa.formatDollar(fsa.SALARY_REDUCTION_LIMIT);
+  var fsaCarry = fsa.formatDollar(fsa.MAX_CARRYOVER);
+  var fsaLede = ledeTextBeforeForm(fsaPage, "fsa-limits");
+  var fsaSentence =
+    "For " +
+    fsa.YEAR +
+    " the IRS cap is " +
+    fsaCap +
+    " set aside from pay. If your plan lets unused money carry to next year, up to " +
+    fsaCarry +
+    " of it can carry.";
+  assert.ok(
+    fsaLede.indexOf(fsaCap) !== -1 && fsaLede.indexOf(fsaCarry) !== -1,
+    "fsa-limits .lede before <form must contain caps from calculator.js via formatDollar: " +
+      [fsaCap, fsaCarry].join(", ") +
+      " — lede: " +
+      fsaLede
+  );
+  assert.strictEqual(
+    fsaLede.indexOf(fsaSentence),
+    0,
+    "fsa-limits .lede must start with the official cap sentence. Got: " + fsaLede
+  );
+  assert.ok(
+    !new RegExp(
+      fsaCarry.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
+        "\\s+extra|extra\\s+" +
+        fsaCarry.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
+        "|plus\\s+" +
+        fsaCarry.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
+        "|on top of",
+      "i"
+    ).test(fsaLede),
+    "fsa-limits lede must not describe the carryover as extra on top of the cap"
+  );
+
+  assert.deepStrictEqual(fsa.lookup({ carryover: "yes" }), {
+    year: 2026,
+    carryoverAllowed: true,
+    carryover: 680,
+    carryoverLabel: "$680",
+    carryoverNote:
+      "Your plan lets unused money carry to next year. The official max leftover is $680. That leftover is unused money, not extra you can set aside from this year's pay.",
+    limit: 3400,
+    limitLabel: "$3,400",
+    amount: null,
+    over: null,
+    comparison: null,
+    humanLine:
+      "Under this dollar, you are within the IRS cap for what you set aside from pay; over it, the IRS does not let that salary reduction go higher for the year.",
+    headline: "$3,400",
+    disclaimer: "This is an official IRS figure lookup, not tax advice.",
+  });
+  assert.deepStrictEqual(fsa.lookup({ carryover: "no" }), {
+    year: 2026,
+    carryoverAllowed: false,
+    carryover: 0,
+    carryoverLabel: null,
+    carryoverNote:
+      "Your plan does not let unused money carry to next year, so we are not using the $680 leftover number.",
+    limit: 3400,
+    limitLabel: "$3,400",
+    amount: null,
+    over: null,
+    comparison: null,
+    humanLine:
+      "Under this dollar, you are within the IRS cap for what you set aside from pay; over it, the IRS does not let that salary reduction go higher for the year.",
+    headline: "$3,400",
+    disclaimer: "This is an official IRS figure lookup, not tax advice.",
+  });
+  assert.strictEqual(fsa.lookup({ carryover: "yes" }).limit, 3400);
+  assert.ok(
+    fsa.lookup({ carryover: "yes" }).limit !== 3400 + 680,
+    "lookup must not add the carryover on top of the set-aside cap"
+  );
+})();
+
 console.log("ok");
