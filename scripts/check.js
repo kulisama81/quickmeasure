@@ -1907,6 +1907,67 @@ function htmlH1(html) {
   );
 });
 
+// Issue #39: mortgage-limit SERP title and meta stay exact, short, and singular.
+// Reverting either string fails this check.
+var LOAN_SERP_TITLE = "Look up the official 2026 county conforming loan limit";
+var LOAN_SERP_DESCRIPTION =
+  "Look up the official 2026 conforming loan limit by county. Under that dollar, a normal mortgage. Over it, a harder loan. Estimate, not a quote.";
+var LOAN_SERP_TITLE_BEFORE =
+  "2026 conforming loan limit — how big a normal mortgage can be · Sourced Calc";
+var LOAN_SERP_DESCRIPTION_BEFORE =
+  "Look up the official 2026 county cap for a normal mortgage. Under that dollar, a normal mortgage. Over it, a harder loan, usually a worse rate. Estimate, not a quote.";
+
+function htmlTitleTags(html) {
+  return html.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+}
+
+function htmlMetaDescriptionTags(html) {
+  return (html.match(/<meta\b[^>]*>/gi) || []).filter(function (tag) {
+    return /\bname\s*=\s*["']description["']/i.test(tag);
+  });
+}
+
+function metaContentAttr(tag) {
+  var m = tag.match(/\bcontent\s*=\s*"([^"]*)"/i);
+  if (!m) m = tag.match(/\bcontent\s*=\s*'([^']*)'/i);
+  assert.ok(m, "meta description is missing a content attribute");
+  return m[1].replace(/\s+/g, " ").trim();
+}
+
+var loanBuiltHtml = fs.readFileSync(
+  path.join(root, "mortgage-limit/index.html"),
+  "utf8"
+);
+var loanTitleTags = htmlTitleTags(loanBuiltHtml);
+assert.strictEqual(
+  loanTitleTags.length,
+  1,
+  "mortgage-limit must have exactly one <title>, found " + loanTitleTags.length
+);
+var loanSerpTitle = htmlTitle(loanBuiltHtml);
+assert.strictEqual(loanSerpTitle, LOAN_SERP_TITLE);
+assert.notStrictEqual(loanSerpTitle, LOAN_SERP_TITLE_BEFORE);
+assert.ok(
+  loanSerpTitle.length <= 60,
+  "mortgage-limit <title> is " + loanSerpTitle.length + " characters; max 60"
+);
+var loanDescTags = htmlMetaDescriptionTags(loanBuiltHtml);
+assert.strictEqual(
+  loanDescTags.length,
+  1,
+  "mortgage-limit must have exactly one meta description, found " +
+    loanDescTags.length
+);
+var loanSerpDescription = metaContentAttr(loanDescTags[0]);
+assert.strictEqual(loanSerpDescription, LOAN_SERP_DESCRIPTION);
+assert.notStrictEqual(loanSerpDescription, LOAN_SERP_DESCRIPTION_BEFORE);
+assert.ok(
+  loanSerpDescription.length <= 155,
+  "mortgage-limit meta description is " +
+    loanSerpDescription.length +
+    " characters; max 155"
+);
+
 // Issue #25: muted text on page gray must meet WCAG AA (4.5:1).
 // Today's tokens --muted #6b7280 on --bg #f3f4f6 are 4.39:1 and fail.
 function normalizeHex(hex) {
