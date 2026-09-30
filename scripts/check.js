@@ -1879,7 +1879,7 @@ function htmlH1(html) {
   {
     file: "retirement-limits/index.html",
     html: retHtml,
-    phrase: "contribution limit",
+    phrase: "401(k) limit",
     h1: "<h1>How much you can put in a 401(k) or IRA this year (2026)</h1>",
   },
   {
@@ -2569,12 +2569,10 @@ faviconHtmlPages.forEach(function (file) {
   );
 })();
 
-// Issue #45: /hsa-limits/ <title> is the exact 52-character SERP string.
-// Every money-page <title> is at most 60 characters.
+// Issue #45: every money-page <title> from sitemap.xml is <= 60 characters.
+// No exceptions. These four titles are exact strings.
 // Money pages are sitemap <loc>s other than the home page and the three
 // non-dollar tools, so a new sitemap URL is covered automatically.
-// Mileage, retirement-limits, and standard-deduction are already over 60.
-// This issue does not retitle them; those titles stay byte-identical.
 (function () {
   var TITLE_MAX = 60;
   var HSA_TITLE =
@@ -2589,13 +2587,14 @@ faviconHtmlPages.forEach(function (file) {
     "https://sourcedcalc.com/concrete-bags/": true,
     "https://sourcedcalc.com/wa-heat-pump-rebate/": true,
   };
-  var OVER_60_UNCHANGED = {
+  var EXACT_TITLES = {
+    "hsa-limits/index.html": HSA_TITLE,
     "mileage/index.html":
-      "2026 IRS mileage rate \u2014 how much the IRS says one mile is worth \u00B7 Sourced Calc",
+      "2026 IRS mileage rate by trip date \u00B7 Sourced Calc",
     "retirement-limits/index.html":
-      "2026 401(k) and IRA contribution limits \u2014 how much you can put in this year \u00B7 Sourced Calc",
+      "2026 401(k) limit $24,500 \u00B7 IRA $7,500 (IRS) \u00B7 Sourced Calc",
     "standard-deduction/index.html":
-      "2026 standard deduction \u2014 how much the IRS lets most people subtract before tax \u00B7 Sourced Calc",
+      "2026 standard deduction: $16,100 / $32,200 \u00B7 Sourced Calc",
   };
 
   function titleTags(html) {
@@ -2671,26 +2670,29 @@ faviconHtmlPages.forEach(function (file) {
     "expected at least the 7 money pages, found " + moneyLocs.length
   );
 
+  var seenMoneyFiles = [];
   moneyLocs.forEach(function (loc) {
     var file = fileForLoc(loc);
+    seenMoneyFiles.push(file);
     var html = fs.readFileSync(path.join(root, file), "utf8");
     var title = titleText(html);
-    var frozen = OVER_60_UNCHANGED[file];
-    if (frozen) {
-      assert.strictEqual(
-        title,
-        frozen,
-        file + " title is already over 60 and must stay unchanged"
-      );
-      assert.ok(
-        title.length > TITLE_MAX,
-        file + " is " + title.length + " characters; recorded as over " + TITLE_MAX
-      );
-      return;
-    }
     assert.ok(
       title.length <= TITLE_MAX,
       file + " <title> is " + title.length + " characters; max " + TITLE_MAX
+    );
+    if (Object.prototype.hasOwnProperty.call(EXACT_TITLES, file)) {
+      assert.strictEqual(title, EXACT_TITLES[file], file + " <title>");
+    }
+    assert.ok(
+      !/property\s*=\s*["']og:title["']/i.test(html) &&
+        !/name\s*=\s*["']twitter:title["']/i.test(html),
+      file + " must not have og:title or twitter:title"
+    );
+  });
+  Object.keys(EXACT_TITLES).forEach(function (file) {
+    assert.ok(
+      seenMoneyFiles.indexOf(file) !== -1,
+      "money pages from sitemap must include " + file
     );
   });
 
@@ -2710,11 +2712,6 @@ faviconHtmlPages.forEach(function (file) {
   assert.ok(
     hsaTitle.length <= TITLE_MAX,
     "hsa-limits <title> is " + hsaTitle.length + " characters; max " + TITLE_MAX
-  );
-  assert.ok(
-    !/property\s*=\s*["']og:title["']/i.test(hsaPage) &&
-      !/name\s*=\s*["']twitter:title["']/i.test(hsaPage),
-    "hsa-limits must not add og:title or twitter:title; other pages have neither"
   );
   assert.strictEqual(HSA_DESCRIPTION.length, 146);
   assert.strictEqual(
