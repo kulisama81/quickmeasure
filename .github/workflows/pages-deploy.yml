@@ -1,9 +1,11 @@
-# Production Pages deploy after merge to main (issue #30).
-# Project: quickmeasure → sourcedcalc.com
-# Secrets (repo Settings → Secrets and variables → Actions):
-#   CLOUDFLARE_API_TOKEN  — Account Cloudflare Pages Edit
+# Production Pages deploy after merge to main.
+# Direct Upload project quickmeasure → sourcedcalc.com (not Git-connected).
+# Secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN  — Account / Cloudflare Pages / Edit
+#                           Account / Account Settings / Read
 #   CLOUDFLARE_ACCOUNT_ID — Cloudflare account id
-# Token lives in Actions secrets only. Humans merge.
+# Humans merge. This workflow does not auto-merge PRs.
+# npm ci honors .npmrc ignore-scripts=true. Wrangler is the lockfile pin.
 name: Pages deploy
 
 on:
@@ -11,6 +13,7 @@ on:
     branches:
       - main
 
+# Queue merges. Never cancel an upload that is already in progress.
 concurrency:
   group: pages-deploy
   cancel-in-progress: false
@@ -22,20 +25,50 @@ jobs:
   deploy:
     name: pages-deploy
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
+
       - name: Install
         run: npm ci
+
       - name: check.js
         run: npm test
-      - name: Deploy Cloudflare Pages (quickmeasure)
-        run: npm run pages:deploy -- --project-name=quickmeasure --branch=main
+
+      - name: pages-release self-test
+        run: node scripts/pages-release.js self-test
+
+      - name: Record current production deployment
+        id: previous
+        run: node scripts/pages-release.js record
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy Cloudflare Pages (quickmeasure)
+        id: deploy
+        run: npm run pages:deploy -- --project-name=quickmeasure --branch=main --commit-hash=${{ github.sha }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Smoke check sourcedcalc.com
+        id: smoke
+        run: node scripts/pages-release.js smoke
+        env:
+          SMOKE_CACHE_BUST: ${{ github.sha }}
+
+      - name: Roll back production deployment
+        if: failure() && steps.deploy.outcome == 'success' && steps.smoke.outcome == 'failure'
+        run: node scripts/pages-release.js rollback
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PAGES_ROLLBACK_DEPLOYMENT_ID: ${{ steps.previous.outputs.deployment_id }}
