@@ -2731,4 +2731,197 @@ faviconHtmlPages.forEach(function (file) {
   );
 })();
 
+// Issue #46: one footer order on every calculator page.
+// Each page drops only its own link. Issue #45 owns the exact titles.
+(function () {
+  var FOOTER_ORDER = [
+    { href: "../index.html", label: "Home", path: "/" },
+    { href: "../mileage/", label: "Mileage", path: "/mileage/" },
+    { href: "../fsa-limits/", label: "Health FSA", path: "/fsa-limits/" },
+    { href: "../hsa-limits/", label: "HSA", path: "/hsa-limits/" },
+    { href: "../tax-brackets/", label: "Tax rates", path: "/tax-brackets/" },
+    {
+      href: "../standard-deduction/",
+      label: "Standard deduction",
+      path: "/standard-deduction/",
+    },
+    { href: "../mortgage-limit/", label: "Mortgage cap", path: "/mortgage-limit/" },
+    {
+      href: "../retirement-limits/",
+      label: "401(k) / IRA",
+      path: "/retirement-limits/",
+    },
+    {
+      href: "../wa-heat-pump-rebate/",
+      label: "Heat pump rebate",
+      path: "/wa-heat-pump-rebate/",
+    },
+    { href: "../paint-coverage/", label: "Paint", path: "/paint-coverage/" },
+    { href: "../concrete-bags/", label: "Concrete", path: "/concrete-bags/" },
+  ];
+
+  function expectedLinks(pagePath) {
+    return FOOTER_ORDER.filter(function (item) {
+      return item.path !== pagePath;
+    }).map(function (item) {
+      return { href: item.href, label: item.label };
+    });
+  }
+
+  var HOME_PAGE_LINKS = [
+    { href: "./wa-heat-pump-rebate/", label: "Heat pump rebate" },
+    { href: "./paint-coverage/", label: "Paint" },
+    { href: "./concrete-bags/", label: "Concrete" },
+    { href: "./mortgage-limit/", label: "Mortgage cap" },
+    { href: "./retirement-limits/", label: "401(k) / IRA" },
+    { href: "./mileage/", label: "Mileage" },
+    { href: "./hsa-limits/", label: "HSA" },
+    { href: "./standard-deduction/", label: "Standard deduction" },
+    { href: "./tax-brackets/", label: "Tax rates" },
+    { href: "./fsa-limits/", label: "Health FSA" },
+  ];
+
+  function footerNav(html, page) {
+    var footers = html.match(/<footer class="site-footer">[\s\S]*?<\/footer>/g);
+    assert.ok(
+      footers && footers.length === 1,
+      page + " must have exactly one shared site footer"
+    );
+    assert.ok(
+      footers[0].indexOf(
+        "Sourced Calc · boring home calculators · not a contractor"
+      ) !== -1,
+      page + " footer tagline must stay"
+    );
+    var navs = footers[0].match(
+      /<nav aria-label="Calculators">[\s\S]*?<\/nav>/g
+    );
+    assert.ok(navs && navs.length === 1, page + " footer nav missing");
+    var anchors = [];
+    var re = /<a href="([^"]+)">([^<]*)<\/a>/g;
+    var m;
+    while ((m = re.exec(navs[0]))) {
+      anchors.push({ href: m[1], label: m[2] });
+    }
+    assert.strictEqual(
+      (navs[0].match(/<a\b/g) || []).length,
+      anchors.length,
+      page + " footer links must be plain text anchors"
+    );
+    return anchors;
+  }
+
+  function resolveHref(fromFile, href) {
+    return path.posix.normalize(path.posix.join(path.posix.dirname(fromFile), href));
+  }
+
+  function toPublicPath(resolved) {
+    if (resolved === "index.html" || resolved === "." || resolved === "") return "/";
+    var rel = resolved.replace(/^\.\//, "");
+    if (rel.endsWith("/index.html")) rel = rel.slice(0, -"index.html".length);
+    if (!rel.endsWith("/")) rel += "/";
+    if (rel.charAt(0) !== "/") rel = "/" + rel;
+    return rel;
+  }
+
+  function fileForPublicPath(publicPath) {
+    if (publicPath === "/") return "index.html";
+    return publicPath.replace(/^\//, "") + "index.html";
+  }
+
+  function assertTitleIsTheOneInTheFile(html, page) {
+    var tags = html.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+    assert.strictEqual(
+      tags.length,
+      1,
+      page + " must keep the single <title> already in the file"
+    );
+    var footerAt = html.indexOf("<footer");
+    if (footerAt === -1) {
+      assert.ok(html.indexOf(tags[0]) !== -1, page + " <title> must stay in the file");
+      return;
+    }
+    assert.ok(
+      html.indexOf(tags[0]) < footerAt,
+      page + " <title> must stay in the file ahead of the footer"
+    );
+    assert.ok(
+      html.slice(footerAt).indexOf("<title") === -1,
+      page + " footer must not carry a <title>"
+    );
+  }
+
+  var locs = [];
+  sitemap.replace(/<loc>([^<]+)<\/loc>/g, function (_, loc) {
+    locs.push(loc);
+    return _;
+  });
+  var calculatorPaths = locs
+    .map(function (loc) {
+      return new URL(loc).pathname;
+    })
+    .filter(function (p) {
+      return p !== "/";
+    });
+  assert.strictEqual(calculatorPaths.length, 10, "sitemap calculator pages");
+
+  locs.forEach(function (loc) {
+    var pagePath = new URL(loc).pathname;
+    var pageFile =
+      pagePath === "/" ? "index.html" : pagePath.replace(/^\//, "") + "index.html";
+    var html = fs.readFileSync(path.join(root, pageFile), "utf8");
+    assertTitleIsTheOneInTheFile(html, pageFile);
+    var anchors = footerNav(html, pageFile);
+    var linked = anchors.map(function (a) {
+      var resolved = resolveHref(pageFile, a.href);
+      var dest = fileForPublicPath(toPublicPath(resolved));
+      assert.ok(
+        fs.existsSync(path.join(root, dest)),
+        pageFile + " footer href " + a.href + " must resolve to " + dest
+      );
+      return toPublicPath(resolved);
+    });
+    assert.ok(
+      linked.indexOf(pagePath) === -1,
+      pageFile + " must not link to itself"
+    );
+    calculatorPaths.forEach(function (calcPath) {
+      if (calcPath === pagePath) return;
+      assert.ok(
+        linked.indexOf(calcPath) !== -1,
+        pageFile + " footer must link to " + calcPath
+      );
+    });
+    if (pagePath === "/") {
+      assert.deepStrictEqual(anchors, HOME_PAGE_LINKS, "home footer must stay unchanged");
+      return;
+    }
+    assert.ok(
+      anchors.some(function (a) {
+        return a.href === "../index.html" && a.label === "Home";
+      }),
+      pageFile + " must still include the Home link"
+    );
+    assert.deepStrictEqual(
+      anchors,
+      expectedLinks(pagePath),
+      pageFile + " footer links must equal the shared order minus this page"
+    );
+  });
+
+  var notFound = fs.readFileSync(path.join(root, "404.html"), "utf8");
+  assertTitleIsTheOneInTheFile(notFound, "404.html");
+  assert.ok(
+    notFound.indexOf("site-footer") === -1,
+    "404 must stay without the shared calculator footer"
+  );
+
+  var footerLinkCss = stylesCss.match(/\.site-footer a\s*\{([^}]+)\}/);
+  assert.ok(footerLinkCss, ".site-footer a rule missing");
+  assert.ok(
+    /min-height:\s*44px/.test(footerLinkCss[1]),
+    ".site-footer a must be at least 44px tall"
+  );
+})();
+
 console.log("ok");
