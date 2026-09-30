@@ -440,12 +440,18 @@ details p {
 .site-footer nav {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.45rem 1rem;
   margin-bottom: 0.65rem;
+  max-width: 100%;
 }
 
 .site-footer a {
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
 }
 
 .hidden {
