@@ -2731,134 +2731,42 @@ faviconHtmlPages.forEach(function (file) {
   );
 })();
 
-// Issue #46: shared footer. Existing links stay, including Home.
-// Missing calculators are appended. The current page is not a normal link.
-// Title text is whatever the file already contains (Issue #45 owns the
-// exact money-page strings and the 60-character cap).
+// Issue #46: one footer order on every calculator page.
+// Each page drops only its own link. Issue #45 owns the exact titles.
 (function () {
-  var HOME_LINK = { href: "../index.html", label: "Home" };
-  var EXPECTED = {
-    "mileage/index.html": [
-      HOME_LINK,
-      { href: "../wa-heat-pump-rebate/", label: "Heat pump rebate" },
-      { href: "../paint-coverage/", label: "Paint" },
-      { href: "../concrete-bags/", label: "Concrete" },
-      { href: "../mortgage-limit/", label: "Mortgage cap" },
-      { href: "../retirement-limits/", label: "401(k) / IRA" },
-      { href: "../hsa-limits/", label: "HSA" },
-      { href: "../standard-deduction/", label: "Standard deduction" },
-      { href: "../tax-brackets/", label: "Tax rates" },
-      { href: "../fsa-limits/", label: "Health FSA" },
-    ],
-    "fsa-limits/index.html": [
-      HOME_LINK,
-      { href: "../wa-heat-pump-rebate/", label: "Heat pump rebate" },
-      { href: "../paint-coverage/", label: "Paint" },
-      { href: "../concrete-bags/", label: "Concrete" },
-      { href: "../mortgage-limit/", label: "Mortgage cap" },
-      { href: "../retirement-limits/", label: "401(k) / IRA" },
-      { href: "../mileage/", label: "Mileage" },
-      { href: "../hsa-limits/", label: "HSA" },
-      { href: "../standard-deduction/", label: "Standard deduction" },
-      { href: "../tax-brackets/", label: "Tax rates" },
-    ],
-    "hsa-limits/index.html": [
-      HOME_LINK,
-      { href: "../wa-heat-pump-rebate/", label: "Heat pump rebate" },
-      { href: "../paint-coverage/", label: "Paint" },
-      { href: "../concrete-bags/", label: "Concrete" },
-      { href: "../mortgage-limit/", label: "Mortgage cap" },
-      { href: "../retirement-limits/", label: "401(k) / IRA" },
-      { href: "../mileage/", label: "Mileage" },
-      { href: "../standard-deduction/", label: "Standard deduction" },
-      { href: "../tax-brackets/", label: "Tax rates" },
-      { href: "../fsa-limits/", label: "Health FSA" },
-    ],
-    "tax-brackets/index.html": [
-      HOME_LINK,
-      { href: "../wa-heat-pump-rebate/", label: "Heat pump rebate" },
-      { href: "../paint-coverage/", label: "Paint" },
-      { href: "../concrete-bags/", label: "Concrete" },
-      { href: "../mortgage-limit/", label: "Mortgage cap" },
-      { href: "../retirement-limits/", label: "401(k) / IRA" },
-      { href: "../mileage/", label: "Mileage" },
-      { href: "../hsa-limits/", label: "HSA" },
-      { href: "../standard-deduction/", label: "Standard deduction" },
-      { href: "../fsa-limits/", label: "Health FSA" },
-    ],
-    "standard-deduction/index.html": [
-      HOME_LINK,
-      { href: "../wa-heat-pump-rebate/", label: "Heat pump rebate" },
-      { href: "../paint-coverage/", label: "Paint" },
-      { href: "../concrete-bags/", label: "Concrete" },
-      { href: "../mortgage-limit/", label: "Mortgage cap" },
-      { href: "../retirement-limits/", label: "401(k) / IRA" },
-      { href: "../mileage/", label: "Mileage" },
-      { href: "../hsa-limits/", label: "HSA" },
-      { href: "../tax-brackets/", label: "Tax rates" },
-      { href: "../fsa-limits/", label: "Health FSA" },
-    ],
-    "mortgage-limit/index.html": [
-      HOME_LINK,
-      { href: "../wa-heat-pump-rebate/", label: "Heat pump rebate" },
-      { href: "../paint-coverage/", label: "Paint" },
-      { href: "../concrete-bags/", label: "Concrete" },
-      { href: "../mileage/", label: "Mileage" },
-      { href: "../fsa-limits/", label: "Health FSA" },
-      { href: "../hsa-limits/", label: "HSA" },
-      { href: "../tax-brackets/", label: "Tax rates" },
-      { href: "../standard-deduction/", label: "Standard deduction" },
-      { href: "../retirement-limits/", label: "401(k) / IRA" },
-    ],
-    "retirement-limits/index.html": [
-      HOME_LINK,
-      { href: "../wa-heat-pump-rebate/", label: "Heat pump rebate" },
-      { href: "../paint-coverage/", label: "Paint" },
-      { href: "../concrete-bags/", label: "Concrete" },
-      { href: "../mortgage-limit/", label: "Mortgage cap" },
-      { href: "../mileage/", label: "Mileage" },
-      { href: "../hsa-limits/", label: "HSA" },
-      { href: "../standard-deduction/", label: "Standard deduction" },
-      { href: "../tax-brackets/", label: "Tax rates" },
-      { href: "../fsa-limits/", label: "Health FSA" },
-    ],
-    "wa-heat-pump-rebate/index.html": [
-      HOME_LINK,
-      { href: "../paint-coverage/", label: "Paint" },
-      { href: "../concrete-bags/", label: "Concrete" },
-      { href: "../mileage/", label: "Mileage" },
-      { href: "../fsa-limits/", label: "Health FSA" },
-      { href: "../hsa-limits/", label: "HSA" },
-      { href: "../tax-brackets/", label: "Tax rates" },
-      { href: "../standard-deduction/", label: "Standard deduction" },
-      { href: "../mortgage-limit/", label: "Mortgage cap" },
-      { href: "../retirement-limits/", label: "401(k) / IRA" },
-    ],
-    "paint-coverage/index.html": [
-      HOME_LINK,
-      { href: "../wa-heat-pump-rebate/", label: "Heat pump rebate" },
-      { href: "../concrete-bags/", label: "Concrete" },
-      { href: "../mileage/", label: "Mileage" },
-      { href: "../fsa-limits/", label: "Health FSA" },
-      { href: "../hsa-limits/", label: "HSA" },
-      { href: "../tax-brackets/", label: "Tax rates" },
-      { href: "../standard-deduction/", label: "Standard deduction" },
-      { href: "../mortgage-limit/", label: "Mortgage cap" },
-      { href: "../retirement-limits/", label: "401(k) / IRA" },
-    ],
-    "concrete-bags/index.html": [
-      HOME_LINK,
-      { href: "../wa-heat-pump-rebate/", label: "Heat pump rebate" },
-      { href: "../paint-coverage/", label: "Paint" },
-      { href: "../mileage/", label: "Mileage" },
-      { href: "../fsa-limits/", label: "Health FSA" },
-      { href: "../hsa-limits/", label: "HSA" },
-      { href: "../tax-brackets/", label: "Tax rates" },
-      { href: "../standard-deduction/", label: "Standard deduction" },
-      { href: "../mortgage-limit/", label: "Mortgage cap" },
-      { href: "../retirement-limits/", label: "401(k) / IRA" },
-    ],
-  };
+  var FOOTER_ORDER = [
+    { href: "../index.html", label: "Home", path: "/" },
+    { href: "../mileage/", label: "Mileage", path: "/mileage/" },
+    { href: "../fsa-limits/", label: "Health FSA", path: "/fsa-limits/" },
+    { href: "../hsa-limits/", label: "HSA", path: "/hsa-limits/" },
+    { href: "../tax-brackets/", label: "Tax rates", path: "/tax-brackets/" },
+    {
+      href: "../standard-deduction/",
+      label: "Standard deduction",
+      path: "/standard-deduction/",
+    },
+    { href: "../mortgage-limit/", label: "Mortgage cap", path: "/mortgage-limit/" },
+    {
+      href: "../retirement-limits/",
+      label: "401(k) / IRA",
+      path: "/retirement-limits/",
+    },
+    {
+      href: "../wa-heat-pump-rebate/",
+      label: "Heat pump rebate",
+      path: "/wa-heat-pump-rebate/",
+    },
+    { href: "../paint-coverage/", label: "Paint", path: "/paint-coverage/" },
+    { href: "../concrete-bags/", label: "Concrete", path: "/concrete-bags/" },
+  ];
+
+  function expectedLinks(pagePath) {
+    return FOOTER_ORDER.filter(function (item) {
+      return item.path !== pagePath;
+    }).map(function (item) {
+      return { href: item.href, label: item.label };
+    });
+  }
 
   var HOME_PAGE_LINKS = [
     { href: "./wa-heat-pump-rebate/", label: "Heat pump rebate" },
@@ -2995,14 +2903,9 @@ faviconHtmlPages.forEach(function (file) {
       pageFile + " must still include the Home link"
     );
     assert.deepStrictEqual(
-      anchors[0],
-      HOME_LINK,
-      pageFile + " Home link must stay first, as on main"
-    );
-    assert.deepStrictEqual(
       anchors,
-      EXPECTED[pageFile],
-      pageFile + " footer links must keep existing ones and add the rest, in order"
+      expectedLinks(pagePath),
+      pageFile + " footer links must equal the shared order minus this page"
     );
   });
 
