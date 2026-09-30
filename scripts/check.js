@@ -1867,7 +1867,7 @@ function htmlH1(html) {
   {
     file: "hsa-limits/index.html",
     html: hsaHtml,
-    phrase: "hsa contribution limit",
+    phrase: "hsa limit",
     h1: "<h1>How much you can put in an HSA this year (2026)</h1>",
   },
   {
@@ -2566,6 +2566,171 @@ faviconHtmlPages.forEach(function (file) {
   assert.ok(
     fsa.lookup({ carryover: "yes" }).limit !== 3400 + 680,
     "lookup must not add the carryover on top of the set-aside cap"
+  );
+})();
+
+// Issue #45: /hsa-limits/ <title> is the exact 52-character SERP string.
+// Every money-page <title> is at most 60 characters.
+// Money pages are sitemap <loc>s other than the home page and the three
+// non-dollar tools, so a new sitemap URL is covered automatically.
+// Mileage, retirement-limits, and standard-deduction are already over 60.
+// This issue does not retitle them; those titles stay byte-identical.
+(function () {
+  var TITLE_MAX = 60;
+  var HSA_TITLE =
+    "2026 HSA limit: $4,400 / $8,750 (IRS) \u00B7 Sourced Calc";
+  var HSA_TITLE_BEFORE =
+    "2026 HSA contribution limits \u2014 how much you can put in an HSA this year \u00B7 Sourced Calc";
+  var HSA_DESCRIPTION =
+    "Look up the official 2026 yearly cap for a health savings account. Just you or you and family, plus $1,000 if you are 55 or older. Not tax advice.";
+  var NOT_MONEY = {
+    "https://sourcedcalc.com/": true,
+    "https://sourcedcalc.com/paint-coverage/": true,
+    "https://sourcedcalc.com/concrete-bags/": true,
+    "https://sourcedcalc.com/wa-heat-pump-rebate/": true,
+  };
+  var OVER_60_UNCHANGED = {
+    "mileage/index.html":
+      "2026 IRS mileage rate \u2014 how much the IRS says one mile is worth \u00B7 Sourced Calc",
+    "retirement-limits/index.html":
+      "2026 401(k) and IRA contribution limits \u2014 how much you can put in this year \u00B7 Sourced Calc",
+    "standard-deduction/index.html":
+      "2026 standard deduction \u2014 how much the IRS lets most people subtract before tax \u00B7 Sourced Calc",
+  };
+
+  function titleTags(html) {
+    return html.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+  }
+
+  function titleText(html) {
+    var tags = titleTags(html);
+    assert.strictEqual(tags.length, 1, "expected exactly one <title>");
+    var m = tags[0].match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+    assert.ok(m, "page must have a <title>");
+    return m[1].replace(/\s+/g, " ").trim();
+  }
+
+  function metaDescription(html) {
+    var tags = (html.match(/<meta\b[^>]*>/gi) || []).filter(function (tag) {
+      return /\bname\s*=\s*["']description["']/i.test(tag);
+    });
+    assert.strictEqual(tags.length, 1, "expected exactly one meta description");
+    var m = tags[0].match(/\bcontent\s*=\s*"([^"]*)"/i);
+    if (!m) m = tags[0].match(/\bcontent\s*=\s*'([^']*)'/i);
+    assert.ok(m, "meta description is missing a content attribute");
+    return m[1].replace(/\s+/g, " ").trim();
+  }
+
+  function h1Tag(html) {
+    var tags = html.match(/<h1>[\s\S]*?<\/h1>/g) || [];
+    assert.strictEqual(tags.length, 1, "expected exactly one <h1>");
+    return tags[0];
+  }
+
+  function canonicalHref(html) {
+    var tags = (html.match(/<link\b[^>]*>/gi) || []).filter(function (tag) {
+      return /\brel\s*=\s*["']canonical["']/i.test(tag);
+    });
+    assert.strictEqual(tags.length, 1, "expected exactly one canonical link");
+    var m = tags[0].match(/\bhref\s*=\s*"([^"]*)"/i);
+    if (!m) m = tags[0].match(/\bhref\s*=\s*'([^']*)'/i);
+    assert.ok(m, "canonical link is missing href");
+    return m[1];
+  }
+
+  function fileForLoc(loc) {
+    var pathPart = loc.replace("https://sourcedcalc.com", "");
+    if (pathPart === "/") return "index.html";
+    return pathPart.replace(/^\//, "").replace(/\/$/, "") + "/index.html";
+  }
+
+  var locs = [];
+  sitemap.replace(/<loc>([^<]+)<\/loc>/g, function (_, loc) {
+    locs.push(loc);
+    return _;
+  });
+  var moneyLocs = locs.filter(function (loc) {
+    return !NOT_MONEY[loc];
+  });
+  [
+    "https://sourcedcalc.com/mortgage-limit/",
+    "https://sourcedcalc.com/retirement-limits/",
+    "https://sourcedcalc.com/mileage/",
+    "https://sourcedcalc.com/hsa-limits/",
+    "https://sourcedcalc.com/standard-deduction/",
+    "https://sourcedcalc.com/tax-brackets/",
+    "https://sourcedcalc.com/fsa-limits/",
+  ].forEach(function (loc) {
+    assert.ok(
+      moneyLocs.indexOf(loc) !== -1,
+      "money pages from sitemap must include " + loc
+    );
+  });
+  assert.ok(
+    moneyLocs.length >= 7,
+    "expected at least the 7 money pages, found " + moneyLocs.length
+  );
+
+  moneyLocs.forEach(function (loc) {
+    var file = fileForLoc(loc);
+    var html = fs.readFileSync(path.join(root, file), "utf8");
+    var title = titleText(html);
+    var frozen = OVER_60_UNCHANGED[file];
+    if (frozen) {
+      assert.strictEqual(
+        title,
+        frozen,
+        file + " title is already over 60 and must stay unchanged"
+      );
+      assert.ok(
+        title.length > TITLE_MAX,
+        file + " is " + title.length + " characters; recorded as over " + TITLE_MAX
+      );
+      return;
+    }
+    assert.ok(
+      title.length <= TITLE_MAX,
+      file + " <title> is " + title.length + " characters; max " + TITLE_MAX
+    );
+  });
+
+  var hsaPage = fs.readFileSync(
+    path.join(root, "hsa-limits/index.html"),
+    "utf8"
+  );
+  var hsaTitle = titleText(hsaPage);
+  assert.strictEqual(HSA_TITLE.length, 52);
+  assert.strictEqual(hsaTitle, HSA_TITLE, "hsa-limits <title>");
+  assert.notStrictEqual(hsaTitle, HSA_TITLE_BEFORE);
+  assert.strictEqual(
+    hsaTitle.charCodeAt(hsaTitle.indexOf("\u00B7")),
+    0x00b7,
+    "hsa-limits title middle dot must be U+00B7"
+  );
+  assert.ok(
+    hsaTitle.length <= TITLE_MAX,
+    "hsa-limits <title> is " + hsaTitle.length + " characters; max " + TITLE_MAX
+  );
+  assert.ok(
+    !/property\s*=\s*["']og:title["']/i.test(hsaPage) &&
+      !/name\s*=\s*["']twitter:title["']/i.test(hsaPage),
+    "hsa-limits must not add og:title or twitter:title; other pages have neither"
+  );
+  assert.strictEqual(HSA_DESCRIPTION.length, 146);
+  assert.strictEqual(
+    metaDescription(hsaPage),
+    HSA_DESCRIPTION,
+    "hsa-limits meta description must stay unchanged"
+  );
+  assert.strictEqual(
+    h1Tag(hsaPage),
+    "<h1>How much you can put in an HSA this year (2026)</h1>",
+    "hsa-limits <h1> must stay byte-identical"
+  );
+  assert.strictEqual(
+    canonicalHref(hsaPage),
+    "https://sourcedcalc.com/hsa-limits/",
+    "hsa-limits canonical URL must stay unchanged"
   );
 })();
 
