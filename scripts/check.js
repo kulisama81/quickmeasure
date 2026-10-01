@@ -1910,7 +1910,7 @@ function htmlH1(html) {
 // Issue #39: mortgage-limit SERP title and meta stay exact, short, and singular.
 // Reverting either string fails this check.
 var LOAN_SERP_TITLE =
-  "2026 conforming loan limit by county (FHFA) · Sourced Calc";
+  "2026 conforming loan limit: $832,750 (FHFA) · Sourced Calc";
 var LOAN_SERP_DESCRIPTION =
   "Look up your county's 2026 conforming loan limit from the official FHFA file: $832,750 in most counties, up to $1,249,125 in high-cost areas.";
 var LOAN_SERP_TITLE_BEFORE =
@@ -1968,6 +1968,89 @@ assert.ok(
     loanSerpDescription.length +
     " characters; max 155"
 );
+
+// Issue #49: /mortgage-limit/ <title> shows the 2026 one-unit baseline.
+// The dollar in that title must equal the FHFA table on the same page
+// and the baked baseline1Unit, so the figure cannot drift from the data.
+(function () {
+  var EXPECTED_TITLE =
+    "2026 conforming loan limit: $832,750 (FHFA) \u00B7 Sourced Calc";
+  assert.strictEqual(EXPECTED_TITLE.length, 58);
+
+  function titleText(html) {
+    var tags = html.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+    assert.strictEqual(
+      tags.length,
+      1,
+      "mortgage-limit must have exactly one <title>, found " + tags.length
+    );
+    var m = tags[0].match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+    assert.ok(m, "mortgage-limit must have a <title>");
+    return m[1].replace(/\s+/g, " ").trim();
+  }
+
+  function dollarsToNumber(label) {
+    var n = Number(String(label).replace(/\$/g, "").replace(/,/g, ""));
+    assert.ok(isFinite(n) && n > 0, "expected a dollar amount, got " + label);
+    return n;
+  }
+
+  var html = fs.readFileSync(
+    path.join(root, "mortgage-limit/index.html"),
+    "utf8"
+  );
+  var title = titleText(html);
+  assert.strictEqual(title, EXPECTED_TITLE);
+  assert.ok(
+    title.length <= 60,
+    "mortgage-limit <title> is " + title.length + " characters; max 60"
+  );
+  var dotAt = title.indexOf("\u00B7");
+  assert.ok(dotAt !== -1, "mortgage-limit title must use a middle dot");
+  assert.strictEqual(
+    title.charCodeAt(dotAt),
+    0x00b7,
+    "mortgage-limit title middle dot must be U+00B7"
+  );
+
+  var titleFigures = title.match(/\$[\d,]+/g) || [];
+  assert.deepStrictEqual(
+    titleFigures,
+    ["$832,750"],
+    "mortgage-limit title must contain only the baseline dollar"
+  );
+
+  var rows = html.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+  var newsRow = null;
+  rows.forEach(function (row) {
+    if (/FHFA 2026 news release/.test(row)) newsRow = row;
+  });
+  assert.ok(
+    newsRow,
+    "FHFA 2026 news release row missing from the sources table"
+  );
+  var floor = newsRow.match(/Nationwide 1-home floor (\$[\d,]+)/);
+  assert.ok(
+    floor,
+    "FHFA table must state the nationwide 1-home floor"
+  );
+  assert.strictEqual(
+    titleFigures[0],
+    floor[1],
+    "title figure must equal the FHFA table nationwide 1-home floor"
+  );
+  assert.strictEqual(
+    dollarsToNumber(floor[1]),
+    loan.BASELINE_1_UNIT,
+    "FHFA table floor must equal baseline1Unit"
+  );
+  assert.strictEqual(
+    titleFigures[0],
+    loan.formatDollar(loan.BASELINE_1_UNIT),
+    "title figure must equal the page's 2026 one-unit baseline"
+  );
+  assert.strictEqual(loan.YEAR, 2026);
+})();
 
 // Issue #25: muted text on page gray must meet WCAG AA (4.5:1).
 // Today's tokens --muted #6b7280 on --bg #f3f4f6 are 4.39:1 and fail.
