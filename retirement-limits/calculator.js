@@ -141,10 +141,31 @@
     };
   }
 
+  // SERP meta for /retirement-limits/. Built from the same IRS constants as
+  // the sources table so the dollars cannot drift. Catch-up amounts are the
+  // ones that table already shows.
+  function metaDescription() {
+    return (
+      YEAR +
+      " 401(k) limit: " +
+      formatDollar(WORKPLACE_BASE) +
+      ". IRA: " +
+      formatDollar(IRA_BASE) +
+      " (IRS). 401(k) catch-up " +
+      formatDollar(WORKPLACE_CATCHUP_50) +
+      " at 50+ or " +
+      formatDollar(WORKPLACE_CATCHUP_60_63) +
+      " at 60-63. IRA catch-up " +
+      formatDollar(IRA_CATCHUP_50) +
+      " at 50+. Not tax advice."
+    );
+  }
+
   root.qmRetirement = {
     lookup: lookup,
     formatDollar: formatDollar,
     HUMAN_LINE: HUMAN_LINE,
+    META_DESCRIPTION: metaDescription(),
     YEAR: YEAR,
     WORKPLACE_BASE: WORKPLACE_BASE,
     WORKPLACE_CATCHUP_50: WORKPLACE_CATCHUP_50,
