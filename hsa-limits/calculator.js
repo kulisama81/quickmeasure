@@ -122,10 +122,26 @@
     };
   }
 
+  // SERP meta for /hsa-limits/. Built from the same IRS constants as the
+  // lede and the sources table so the dollars cannot drift.
+  function metaDescription() {
+    return (
+      YEAR +
+      " HSA limit: " +
+      formatDollar(SELF_BASE) +
+      " self / " +
+      formatDollar(FAMILY_BASE) +
+      " family (IRS). Plus " +
+      formatDollar(AGE_55_EXTRA) +
+      " catch-up at 55+. Not tax advice."
+    );
+  }
+
   root.qmHsa = {
     lookup: lookup,
     formatDollar: formatDollar,
     HUMAN_LINE: HUMAN_LINE,
+    META_DESCRIPTION: metaDescription(),
     YEAR: YEAR,
     SELF_BASE: SELF_BASE,
     FAMILY_BASE: FAMILY_BASE,
