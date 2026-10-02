@@ -2663,7 +2663,7 @@ faviconHtmlPages.forEach(function (file) {
   var HSA_TITLE_BEFORE =
     "2026 HSA contribution limits \u2014 how much you can put in an HSA this year \u00B7 Sourced Calc";
   var HSA_DESCRIPTION =
-    "Look up the official 2026 yearly cap for a health savings account. Just you or you and family, plus $1,000 if you are 55 or older. Not tax advice.";
+    "2026 HSA limit: $4,400 self / $8,750 family (IRS). Plus $1,000 catch-up at 55+. Not tax advice.";
   var NOT_MONEY = {
     "https://sourcedcalc.com/": true,
     "https://sourcedcalc.com/paint-coverage/": true,
@@ -2796,11 +2796,11 @@ faviconHtmlPages.forEach(function (file) {
     hsaTitle.length <= TITLE_MAX,
     "hsa-limits <title> is " + hsaTitle.length + " characters; max " + TITLE_MAX
   );
-  assert.strictEqual(HSA_DESCRIPTION.length, 146);
+  assert.strictEqual(HSA_DESCRIPTION.length, 95);
   assert.strictEqual(
     metaDescription(hsaPage),
     HSA_DESCRIPTION,
-    "hsa-limits meta description must stay unchanged"
+    "hsa-limits meta description"
   );
   assert.strictEqual(
     h1Tag(hsaPage),
@@ -3004,6 +3004,165 @@ faviconHtmlPages.forEach(function (file) {
   assert.ok(
     /min-height:\s*44px/.test(footerLinkCss[1]),
     ".site-footer a must be at least 44px tall"
+  );
+})();
+
+// Issue #51: /hsa-limits/ meta description leads with the 2026 IRS dollars.
+// Reverting the description fails this check. Title, H1, lede, OG tags, and
+// every other page's <head> stay byte-identical to 76b6e94.
+(function () {
+  var EXPECTED =
+    "2026 HSA limit: $4,400 self / $8,750 family (IRS). Plus $1,000 catch-up at 55+. Not tax advice.";
+  var DESCRIPTION_BEFORE =
+    "Look up the official 2026 yearly cap for a health savings account. Just you or you and family, plus $1,000 if you are 55 or older. Not tax advice.";
+  var TITLE = "2026 HSA limit: $4,400 / $8,750 (IRS) \u00B7 Sourced Calc";
+  var H1 = "<h1>How much you can put in an HSA this year (2026)</h1>";
+  var LEDE =
+    '      <p class="lede">\n' +
+    "        For 2026 the IRS cap is $4,400 if the plan covers just you, or $8,750\n" +
+    "        for you and family. If you are 55 or older, add $1,000. Pick who is on\n" +
+    "        the health plan and whether you are 55 or older this year. We look up\n" +
+    "        the official yearly dollar. Not tax advice.\n" +
+    "      </p>";
+
+  function metaDescriptionTags(html) {
+    return (html.match(/<meta\b[^>]*>/gi) || []).filter(function (tag) {
+      return /\bname\s*=\s*["']description["']/i.test(tag);
+    });
+  }
+
+  function metaContentAttr(tag) {
+    var m = tag.match(/\bcontent\s*=\s*"([^"]*)"/i);
+    if (!m) m = tag.match(/\bcontent\s*=\s*'([^']*)'/i);
+    assert.ok(m, "meta description is missing a content attribute");
+    return m[1];
+  }
+
+  function dollarsToNumber(label) {
+    var n = Number(String(label).replace(/\$/g, "").replace(/,/g, ""));
+    assert.ok(isFinite(n) && n > 0, "expected a dollar amount, got " + label);
+    return n;
+  }
+
+  function listHtml(dir, acc) {
+    fs.readdirSync(dir).forEach(function (name) {
+      if (name === "node_modules" || name === ".git" || name === ".wrangler") {
+        return;
+      }
+      var abs = path.join(dir, name);
+      if (fs.statSync(abs).isDirectory()) listHtml(abs, acc);
+      else if (name.endsWith(".html")) acc.push(abs);
+    });
+    return acc;
+  }
+
+  var built = fs.readFileSync(path.join(root, "hsa-limits/index.html"), "utf8");
+  var descTags = metaDescriptionTags(built);
+  assert.strictEqual(
+    descTags.length,
+    1,
+    "hsa-limits must have exactly one meta description, found " + descTags.length
+  );
+  var description = metaContentAttr(descTags[0]);
+  var self = hsa.formatDollar(hsa.SELF_BASE);
+  var family = hsa.formatDollar(hsa.FAMILY_BASE);
+  var extra = hsa.formatDollar(hsa.AGE_55_EXTRA);
+  var derived =
+    hsa.YEAR +
+    " HSA limit: " +
+    self +
+    " self / " +
+    family +
+    " family (IRS). Plus " +
+    extra +
+    " catch-up at 55+. Not tax advice.";
+
+  assert.strictEqual(description, EXPECTED, "hsa-limits meta description");
+  assert.notStrictEqual(description, DESCRIPTION_BEFORE);
+  assert.strictEqual(
+    built.indexOf('content="' + EXPECTED + '"') !== -1,
+    true,
+    "built /hsa-limits/ meta content must be the exact description bytes"
+  );
+  assert.ok(
+    description.length <= 155,
+    "hsa-limits meta description is " +
+      description.length +
+      " characters; max 155"
+  );
+  assert.strictEqual(hsa.META_DESCRIPTION, derived);
+  assert.strictEqual(
+    description,
+    hsa.META_DESCRIPTION,
+    "meta description must be derived from the IRS constants"
+  );
+
+  var figures = description.match(/\$[\d,]+/g) || [];
+  assert.deepStrictEqual(figures, [self, family, extra]);
+  assert.deepStrictEqual(
+    figures.map(dollarsToNumber),
+    [hsa.SELF_BASE, hsa.FAMILY_BASE, hsa.AGE_55_EXTRA],
+    "meta dollars must equal SELF_BASE, FAMILY_BASE, and AGE_55_EXTRA"
+  );
+
+  var formAt = built.indexOf("<form");
+  assert.ok(formAt !== -1, "hsa-limits must include <form");
+  var ledeAt = built.indexOf(LEDE);
+  assert.ok(ledeAt !== -1, "hsa-limits .lede must stay byte-identical");
+  assert.ok(ledeAt < formAt, "hsa-limits .lede must stay above the form");
+  var titleTags = built.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+  assert.strictEqual(titleTags.length, 1, "hsa-limits must have exactly one <title>");
+  assert.strictEqual(titleTags[0], "<title>" + TITLE + "</title>");
+  var h1Tags = built.match(/<h1>[\s\S]*?<\/h1>/g) || [];
+  assert.strictEqual(h1Tags.length, 1, "hsa-limits must have exactly one <h1>");
+  assert.strictEqual(h1Tags[0], H1, "hsa-limits <h1> must stay byte-identical");
+
+  var sourcesAt = built.indexOf('<section class="sources">');
+  assert.ok(sourcesAt !== -1, "hsa-limits sources table missing");
+  var sourcesEnd = built.indexOf("</section>", sourcesAt);
+  var sources = built.slice(sourcesAt, sourcesEnd);
+  assert.ok(
+    sources.indexOf(
+      "2026 yearly HSA cap " + self + " just you, " + family + " you and family."
+    ) !== -1,
+    "IRS table cap must use the same dollars as the meta description"
+  );
+  assert.ok(
+    sources.indexOf("may add\n                  " + extra + ".") !== -1,
+    "IRS table catch-up must use the same dollar as the meta description"
+  );
+
+  assert.ok(
+    !/property\s*=\s*["']og:description["']/i.test(built) &&
+      !/name\s*=\s*["']twitter:description["']/i.test(built),
+    "hsa-limits must not gain og:description or twitter:description"
+  );
+
+  var snap = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "fixtures/page-heads.json"), "utf8")
+  );
+  var files = listHtml(root, []).map(function (abs) {
+    return path.relative(root, abs).split(path.sep).join("/");
+  });
+  files.sort();
+  assert.deepStrictEqual(
+    Object.keys(snap).sort(),
+    files,
+    "head snapshot must cover every HTML page"
+  );
+  files.forEach(function (rel) {
+    var html = fs.readFileSync(path.join(root, rel), "utf8");
+    var heads = html.match(/<head>[\s\S]*?<\/head>/g) || [];
+    assert.strictEqual(heads.length, 1, rel + " must have exactly one <head>");
+    assert.strictEqual(
+      heads[0],
+      snap[rel],
+      rel + " <head> must stay byte-identical"
+    );
+  });
+  assert.ok(
+    snap["hsa-limits/index.html"].indexOf('content="' + EXPECTED + '"') !== -1,
+    "hsa-limits head snapshot must carry the new meta description"
   );
 })();
 
