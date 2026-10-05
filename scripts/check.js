@@ -3010,6 +3010,9 @@ faviconHtmlPages.forEach(function (file) {
 // Issue #51: /hsa-limits/ meta description leads with the 2026 IRS dollars.
 // Reverting the description fails this check. Title, H1, lede, OG tags, and
 // every other page's <head> stay byte-identical to 76b6e94.
+// Issue #53 extends this same head snapshot: /retirement-limits/ leads with
+// the 2026 IRS dollars from the page's own constants. Title, H1, lede, footer,
+// and every other page's <head> stay byte-identical to 73fd871.
 (function () {
   var EXPECTED =
     "2026 HSA limit: $4,400 self / $8,750 family (IRS). Plus $1,000 catch-up at 55+. Not tax advice.";
@@ -3138,6 +3141,182 @@ faviconHtmlPages.forEach(function (file) {
     "hsa-limits must not gain og:description or twitter:description"
   );
 
+  var RET_EXPECTED =
+    "2026 401(k) limit: $24,500. IRA: $7,500 (IRS). 401(k) catch-up $8,000 at 50+ or $11,250 at 60-63. IRA catch-up $1,100 at 50+. Not tax advice.";
+  var RET_DESCRIPTION_BEFORE =
+    "Look up the official 2026 yearly cap for a workplace 401(k) or an IRA. Under that dollar you are within the cap; over it, the IRS does not let you put more in that account this year. Estimate, not tax advice.";
+  var RET_TITLE =
+    "2026 401(k) limit $24,500 \u00B7 IRA $7,500 (IRS) \u00B7 Sourced Calc";
+  var RET_H1 =
+    "<h1>How much you can put in a 401(k) or IRA this year (2026)</h1>";
+  var RET_LEDE =
+    '      <p class="lede">\n' +
+    "        Pick the account and your age. We look up the official yearly dollar\n" +
+    "        cap. Estimate, not tax advice.\n" +
+    "      </p>";
+  var RET_FOOTER =
+    '    <footer class="site-footer">\n' +
+    '      <nav aria-label="Calculators">\n' +
+    '        <a href="../index.html">Home</a>\n' +
+    '        <a href="../mileage/">Mileage</a>\n' +
+    '        <a href="../fsa-limits/">Health FSA</a>\n' +
+    '        <a href="../hsa-limits/">HSA</a>\n' +
+    '        <a href="../tax-brackets/">Tax rates</a>\n' +
+    '        <a href="../standard-deduction/">Standard deduction</a>\n' +
+    '        <a href="../mortgage-limit/">Mortgage cap</a>\n' +
+    '        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>\n' +
+    '        <a href="../paint-coverage/">Paint</a>\n' +
+    '        <a href="../concrete-bags/">Concrete</a>\n' +
+    "      </nav>\n" +
+    "      <p>Sourced Calc \u00B7 boring home calculators \u00B7 not a contractor</p>\n" +
+    "    </footer>";
+
+  var retBuilt = fs.readFileSync(
+    path.join(root, "retirement-limits/index.html"),
+    "utf8"
+  );
+  var retDescTags = metaDescriptionTags(retBuilt);
+  assert.strictEqual(
+    retDescTags.length,
+    1,
+    "retirement-limits must have exactly one meta description, found " +
+      retDescTags.length
+  );
+  var retDescription = metaContentAttr(retDescTags[0]);
+  var workplace = retirement.formatDollar(retirement.WORKPLACE_BASE);
+  var ira = retirement.formatDollar(retirement.IRA_BASE);
+  var catch50 = retirement.formatDollar(retirement.WORKPLACE_CATCHUP_50);
+  var catch6063 = retirement.formatDollar(retirement.WORKPLACE_CATCHUP_60_63);
+  var iraCatch = retirement.formatDollar(retirement.IRA_CATCHUP_50);
+  var retDerived =
+    retirement.YEAR +
+    " 401(k) limit: " +
+    workplace +
+    ". IRA: " +
+    ira +
+    " (IRS). 401(k) catch-up " +
+    catch50 +
+    " at 50+ or " +
+    catch6063 +
+    " at 60-63. IRA catch-up " +
+    iraCatch +
+    " at 50+. Not tax advice.";
+
+  assert.strictEqual(RET_EXPECTED.length, 141);
+  assert.strictEqual(
+    retDescription,
+    RET_EXPECTED,
+    "retirement-limits meta description"
+  );
+  assert.notStrictEqual(retDescription, RET_DESCRIPTION_BEFORE);
+  assert.strictEqual(
+    retBuilt.indexOf('content="' + RET_EXPECTED + '"') !== -1,
+    true,
+    "built /retirement-limits/ meta content must be the exact description bytes"
+  );
+  assert.ok(
+    retDescription.length <= 155,
+    "retirement-limits meta description is " +
+      retDescription.length +
+      " characters; max 155"
+  );
+  assert.ok(
+    /^[\x00-\x7F]+$/.test(retDescription),
+    "retirement-limits meta description must be plain ASCII"
+  );
+  assert.strictEqual(retirement.META_DESCRIPTION, retDerived);
+  assert.strictEqual(
+    retDescription,
+    retirement.META_DESCRIPTION,
+    "meta description must be derived from the IRS constants"
+  );
+  var retLead =
+    retirement.YEAR +
+    " 401(k) limit: " +
+    workplace +
+    ". IRA: " +
+    ira +
+    " (IRS).";
+  assert.strictEqual(retDescription.indexOf(retLead), 0);
+  assert.strictEqual(retLead, "2026 401(k) limit: $24,500. IRA: $7,500 (IRS).");
+  assert.strictEqual(
+    retDescription.slice(-"Not tax advice.".length),
+    "Not tax advice."
+  );
+
+  var retFigures = retDescription.match(/\$[\d,]+/g) || [];
+  assert.deepStrictEqual(retFigures, [
+    workplace,
+    ira,
+    catch50,
+    catch6063,
+    iraCatch,
+  ]);
+  assert.deepStrictEqual(
+    retFigures.map(dollarsToNumber),
+    [
+      retirement.WORKPLACE_BASE,
+      retirement.IRA_BASE,
+      retirement.WORKPLACE_CATCHUP_50,
+      retirement.WORKPLACE_CATCHUP_60_63,
+      retirement.IRA_CATCHUP_50,
+    ],
+    "meta dollars must equal the retirement IRS constants"
+  );
+
+  var retFormAt = retBuilt.indexOf("<form");
+  assert.ok(retFormAt !== -1, "retirement-limits must include <form");
+  var retLedeAt = retBuilt.indexOf(RET_LEDE);
+  assert.ok(retLedeAt !== -1, "retirement-limits .lede must stay byte-identical");
+  assert.ok(retLedeAt < retFormAt, "retirement-limits .lede must stay above the form");
+  var retTitleTags = retBuilt.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+  assert.strictEqual(
+    retTitleTags.length,
+    1,
+    "retirement-limits must have exactly one <title>"
+  );
+  assert.strictEqual(retTitleTags[0], "<title>" + RET_TITLE + "</title>");
+  var retH1Tags = retBuilt.match(/<h1>[\s\S]*?<\/h1>/g) || [];
+  assert.strictEqual(retH1Tags.length, 1, "retirement-limits must have exactly one <h1>");
+  assert.strictEqual(retH1Tags[0], RET_H1, "retirement-limits <h1> must stay byte-identical");
+  assert.ok(
+    retBuilt.indexOf(RET_FOOTER) !== -1,
+    "retirement-limits footer must stay byte-identical"
+  );
+
+  var retSourcesAt = retBuilt.indexOf('<section class="sources">');
+  assert.ok(retSourcesAt !== -1, "retirement-limits sources table missing");
+  var retSourcesEnd = retBuilt.indexOf("</section>", retSourcesAt);
+  var retSources = retBuilt.slice(retSourcesAt, retSourcesEnd);
+  [retirement.WORKPLACE_BASE, retirement.IRA_BASE].forEach(function (n) {
+    var label = retirement.formatDollar(n);
+    assert.ok(
+      retSources.indexOf(label) !== -1,
+      "IRS table must show " + label
+    );
+  });
+  [
+    retirement.WORKPLACE_CATCHUP_50,
+    retirement.WORKPLACE_CATCHUP_60_63,
+    retirement.IRA_CATCHUP_50,
+  ].forEach(function (n) {
+    var label = retirement.formatDollar(n);
+    var shown = retSources.indexOf(label) !== -1;
+    var inMeta = retDescription.indexOf(label) !== -1;
+    assert.strictEqual(
+      inMeta,
+      shown,
+      label +
+        " belongs in the meta description only when the IRS table shows it"
+    );
+  });
+
+  assert.ok(
+    !/property\s*=\s*["']og:description["']/i.test(retBuilt) &&
+      !/name\s*=\s*["']twitter:description["']/i.test(retBuilt),
+    "retirement-limits must not gain og:description or twitter:description"
+  );
+
   var snap = JSON.parse(
     fs.readFileSync(path.join(__dirname, "fixtures/page-heads.json"), "utf8")
   );
@@ -3164,6 +3343,19 @@ faviconHtmlPages.forEach(function (file) {
     snap["hsa-limits/index.html"].indexOf('content="' + EXPECTED + '"') !== -1,
     "hsa-limits head snapshot must carry the new meta description"
   );
+  assert.ok(
+    snap["retirement-limits/index.html"].indexOf(
+      'content="' + RET_EXPECTED + '"'
+    ) !== -1,
+    "retirement-limits head snapshot must carry the new meta description"
+  );
+  files.forEach(function (rel) {
+    if (rel === "retirement-limits/index.html") return;
+    assert.ok(
+      snap[rel].indexOf(RET_EXPECTED) === -1,
+      rel + " head must not pick up the retirement description"
+    );
+  });
 })();
 
 console.log("ok");
