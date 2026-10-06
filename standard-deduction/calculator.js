@@ -276,10 +276,30 @@
     };
   }
 
+  // SERP meta for /standard-deduction/. Built from the same IRS constants as
+  // the sources table so the dollars cannot drift.
+  function metaDescription() {
+    return (
+      YEAR +
+      " standard deduction: " +
+      formatDollar(SINGLE) +
+      " single, " +
+      formatDollar(MFJ) +
+      " married together, " +
+      formatDollar(HOH) +
+      " head of household (IRS). 65+ or blind adds " +
+      formatDollar(EXTRA_MARRIED_OR_SS) +
+      " or " +
+      formatDollar(EXTRA_UNMARRIED) +
+      ". Not tax advice."
+    );
+  }
+
   root.qmStandardDeduction = {
     lookup: lookup,
     formatDollar: formatDollar,
     HUMAN_LINE: HUMAN_LINE,
+    META_DESCRIPTION: metaDescription(),
     YEAR: YEAR,
     SINGLE: SINGLE,
     MFS: MFS,

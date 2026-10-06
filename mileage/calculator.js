@@ -179,11 +179,36 @@
     };
   }
 
+  // SERP meta for /mileage/. Built from the same IRS constants as the
+  // sources table so the cents cannot drift. Charity is one figure because
+  // both halves publish the same rate.
+  function centsPlain(cents) {
+    return formatCents(cents).replace(/\u00A2$/, "");
+  }
+
+  function metaDescription() {
+    return (
+      YEAR +
+      " IRS mileage rate: " +
+      centsPlain(RATES.first.business) +
+      " cents a mile Jan-Jun, " +
+      centsPlain(RATES.second.business) +
+      " cents from July 1 (business). Charity " +
+      centsPlain(RATES.first.charity) +
+      " cents. Medical " +
+      centsPlain(RATES.first.medical) +
+      ", then " +
+      centsPlain(RATES.second.medical) +
+      " cents. Not tax advice."
+    );
+  }
+
   root.qmMileage = {
     lookup: lookup,
     formatCents: formatCents,
     formatDollar: formatDollar,
     HUMAN_LINE: HUMAN_LINE,
+    META_DESCRIPTION: metaDescription(),
     YEAR: YEAR,
     RATES: RATES,
   };

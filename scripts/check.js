@@ -3013,6 +3013,10 @@ faviconHtmlPages.forEach(function (file) {
 // Issue #53 extends this same head snapshot: /retirement-limits/ leads with
 // the 2026 IRS dollars from the page's own constants. Title, H1, lede, footer,
 // and every other page's <head> stay byte-identical to 73fd871.
+// Issue #56 extends this same head snapshot: /standard-deduction/ and
+// /mileage/ lead with the 2026 IRS numbers from each page's own constants.
+// Title, H1, lede, footer, and every other page's <head> stay byte-identical
+// to b2a2472.
 (function () {
   var EXPECTED =
     "2026 HSA limit: $4,400 self / $8,750 family (IRS). Plus $1,000 catch-up at 55+. Not tax advice.";
@@ -3317,6 +3321,387 @@ faviconHtmlPages.forEach(function (file) {
     "retirement-limits must not gain og:description or twitter:description"
   );
 
+  var STD_EXPECTED =
+    "2026 standard deduction: $16,100 single, $32,200 married together, $24,150 head of household (IRS). 65+ or blind adds $1,650 or $2,050. Not tax advice.";
+  var STD_DESCRIPTION_BEFORE =
+    "Look up the official 2026 IRS amount most people subtract before tax instead of listing every deduction. Extra if you are 65 or older or blind. Official figure lookup, not tax advice.";
+  var STD_TITLE =
+    "2026 standard deduction: $16,100 / $32,200 \u00B7 Sourced Calc";
+  var STD_H1 =
+    "<h1>How much the IRS lets most people subtract before tax (2026)</h1>";
+  var STD_LEDE =
+    '      <p class="lede">\n' +
+    "        Pick how you file and whether you are 65 or older or blind. We look up\n" +
+    "        the official dollar. Official figure lookup, not tax advice.\n" +
+    "      </p>";
+  var STD_FOOTER =
+    '    <footer class="site-footer">\n' +
+    '      <nav aria-label="Calculators">\n' +
+    '        <a href="../index.html">Home</a>\n' +
+    '        <a href="../mileage/">Mileage</a>\n' +
+    '        <a href="../fsa-limits/">Health FSA</a>\n' +
+    '        <a href="../hsa-limits/">HSA</a>\n' +
+    '        <a href="../tax-brackets/">Tax rates</a>\n' +
+    '        <a href="../mortgage-limit/">Mortgage cap</a>\n' +
+    '        <a href="../retirement-limits/">401(k) / IRA</a>\n' +
+    '        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>\n' +
+    '        <a href="../paint-coverage/">Paint</a>\n' +
+    '        <a href="../concrete-bags/">Concrete</a>\n' +
+    "      </nav>\n" +
+    "      <p>Sourced Calc \u00B7 boring home calculators \u00B7 not a contractor</p>\n" +
+    "    </footer>";
+
+  var stdBuilt = fs.readFileSync(
+    path.join(root, "standard-deduction/index.html"),
+    "utf8"
+  );
+  var stdDescTags = metaDescriptionTags(stdBuilt);
+  assert.strictEqual(
+    stdDescTags.length,
+    1,
+    "standard-deduction must have exactly one meta description, found " +
+      stdDescTags.length
+  );
+  var stdDescription = metaContentAttr(stdDescTags[0]);
+  var stdSingle = std.formatDollar(std.SINGLE);
+  var stdMfj = std.formatDollar(std.MFJ);
+  var stdHoh = std.formatDollar(std.HOH);
+  var stdExtraMarried = std.formatDollar(std.EXTRA_MARRIED_OR_SS);
+  var stdExtraUnmarried = std.formatDollar(std.EXTRA_UNMARRIED);
+  var stdDerived =
+    std.YEAR +
+    " standard deduction: " +
+    stdSingle +
+    " single, " +
+    stdMfj +
+    " married together, " +
+    stdHoh +
+    " head of household (IRS). 65+ or blind adds " +
+    stdExtraMarried +
+    " or " +
+    stdExtraUnmarried +
+    ". Not tax advice.";
+
+  assert.strictEqual(STD_EXPECTED.length, 151);
+  assert.strictEqual(
+    stdDescription,
+    STD_EXPECTED,
+    "standard-deduction meta description"
+  );
+  assert.notStrictEqual(stdDescription, STD_DESCRIPTION_BEFORE);
+  assert.strictEqual(
+    stdBuilt.indexOf('content="' + STD_EXPECTED + '"') !== -1,
+    true,
+    "built /standard-deduction/ meta content must be the exact description bytes"
+  );
+  assert.ok(
+    stdDescription.length <= 155,
+    "standard-deduction meta description is " +
+      stdDescription.length +
+      " characters; max 155"
+  );
+  assert.ok(
+    /^[\x00-\x7F]+$/.test(stdDescription),
+    "standard-deduction meta description must be plain ASCII"
+  );
+  assert.strictEqual(std.META_DESCRIPTION, stdDerived);
+  assert.strictEqual(
+    stdDescription,
+    std.META_DESCRIPTION,
+    "meta description must be derived from the IRS constants"
+  );
+  var stdLead =
+    std.YEAR +
+    " standard deduction: " +
+    stdSingle +
+    " single, " +
+    stdMfj +
+    " married together, " +
+    stdHoh +
+    " head of household (IRS).";
+  assert.strictEqual(stdDescription.indexOf(stdLead), 0);
+  assert.strictEqual(
+    stdLead,
+    "2026 standard deduction: $16,100 single, $32,200 married together, $24,150 head of household (IRS)."
+  );
+  assert.strictEqual(
+    stdDescription.slice(-"Not tax advice.".length),
+    "Not tax advice."
+  );
+
+  var stdFigures = stdDescription.match(/\$[\d,]+/g) || [];
+  assert.deepStrictEqual(stdFigures, [
+    stdSingle,
+    stdMfj,
+    stdHoh,
+    stdExtraMarried,
+    stdExtraUnmarried,
+  ]);
+  assert.deepStrictEqual(
+    stdFigures.map(dollarsToNumber),
+    [
+      std.SINGLE,
+      std.MFJ,
+      std.HOH,
+      std.EXTRA_MARRIED_OR_SS,
+      std.EXTRA_UNMARRIED,
+    ],
+    "meta dollars must equal the standard deduction IRS constants"
+  );
+
+  var stdFormAt = stdBuilt.indexOf("<form");
+  assert.ok(stdFormAt !== -1, "standard-deduction must include <form");
+  var stdLedeAt = stdBuilt.indexOf(STD_LEDE);
+  assert.ok(stdLedeAt !== -1, "standard-deduction .lede must stay byte-identical");
+  assert.ok(
+    stdLedeAt < stdFormAt,
+    "standard-deduction .lede must stay above the form"
+  );
+  var stdTitleTags = stdBuilt.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+  assert.strictEqual(
+    stdTitleTags.length,
+    1,
+    "standard-deduction must have exactly one <title>"
+  );
+  assert.strictEqual(stdTitleTags[0], "<title>" + STD_TITLE + "</title>");
+  var stdH1Tags = stdBuilt.match(/<h1>[\s\S]*?<\/h1>/g) || [];
+  assert.strictEqual(
+    stdH1Tags.length,
+    1,
+    "standard-deduction must have exactly one <h1>"
+  );
+  assert.strictEqual(
+    stdH1Tags[0],
+    STD_H1,
+    "standard-deduction <h1> must stay byte-identical"
+  );
+  assert.ok(
+    stdBuilt.indexOf(STD_FOOTER) !== -1,
+    "standard-deduction footer must stay byte-identical"
+  );
+
+  var stdSourcesAt = stdBuilt.indexOf('<section class="sources">');
+  assert.ok(stdSourcesAt !== -1, "standard-deduction sources table missing");
+  var stdSourcesEnd = stdBuilt.indexOf("</section>", stdSourcesAt);
+  var stdSources = stdBuilt.slice(stdSourcesAt, stdSourcesEnd);
+  [
+    std.SINGLE,
+    std.MFJ,
+    std.HOH,
+    std.EXTRA_MARRIED_OR_SS,
+    std.EXTRA_UNMARRIED,
+  ].forEach(function (n) {
+    var label = std.formatDollar(n);
+    var shown = stdSources.indexOf(label) !== -1;
+    var inMeta = stdDescription.indexOf(label) !== -1;
+    assert.strictEqual(
+      shown,
+      true,
+      "IRS table must show " + label
+    );
+    assert.strictEqual(
+      inMeta,
+      shown,
+      label +
+        " belongs in the meta description only when the IRS table shows it"
+    );
+  });
+  [std.DEPENDENT_FLOOR, std.DEPENDENT_EARNED_ADDON].forEach(function (n) {
+    var label = std.formatDollar(n);
+    assert.ok(
+      stdSources.indexOf(label) !== -1,
+      "IRS table must still show " + label
+    );
+    assert.ok(
+      stdDescription.indexOf(label) === -1,
+      label + " is not one of the meta figures"
+    );
+  });
+
+  assert.ok(
+    !/property\s*=\s*["']og:description["']/i.test(stdBuilt) &&
+      !/name\s*=\s*["']twitter:description["']/i.test(stdBuilt),
+    "standard-deduction must not gain og:description or twitter:description"
+  );
+
+  var MILE_EXPECTED =
+    "2026 IRS mileage rate: 72.5 cents a mile Jan-Jun, 76 cents from July 1 (business). Charity 14 cents. Medical 20.5, then 23.5 cents. Not tax advice.";
+  var MILE_DESCRIPTION_BEFORE =
+    "Look up the official 2026 IRS cents-per-mile rate from the trip date and trip type. That is how much the IRS says one mile is worth. Estimate, not tax advice.";
+  var MILE_TITLE = "2026 IRS mileage rate by trip date \u00B7 Sourced Calc";
+  var MILE_H1 = "<h1>How much the IRS says one mile is worth (2026)</h1>";
+  var MILE_LEDE =
+    '      <p class="lede">\n' +
+    "        Pick the day of the trip and what kind of trip it was. We look up the\n" +
+    "        official cents-per-mile rate. Estimate, not tax advice.\n" +
+    "      </p>";
+  var MILE_FOOTER =
+    '    <footer class="site-footer">\n' +
+    '      <nav aria-label="Calculators">\n' +
+    '        <a href="../index.html">Home</a>\n' +
+    '        <a href="../fsa-limits/">Health FSA</a>\n' +
+    '        <a href="../hsa-limits/">HSA</a>\n' +
+    '        <a href="../tax-brackets/">Tax rates</a>\n' +
+    '        <a href="../standard-deduction/">Standard deduction</a>\n' +
+    '        <a href="../mortgage-limit/">Mortgage cap</a>\n' +
+    '        <a href="../retirement-limits/">401(k) / IRA</a>\n' +
+    '        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>\n' +
+    '        <a href="../paint-coverage/">Paint</a>\n' +
+    '        <a href="../concrete-bags/">Concrete</a>\n' +
+    "      </nav>\n" +
+    "      <p>Sourced Calc \u00B7 boring home calculators \u00B7 not a contractor</p>\n" +
+    "    </footer>";
+
+  function centsPlain(cents) {
+    return mileage.formatCents(cents).replace(/\u00A2$/, "");
+  }
+
+  var mileBuilt = fs.readFileSync(path.join(root, "mileage/index.html"), "utf8");
+  var mileDescTags = metaDescriptionTags(mileBuilt);
+  assert.strictEqual(
+    mileDescTags.length,
+    1,
+    "mileage must have exactly one meta description, found " + mileDescTags.length
+  );
+  var mileDescription = metaContentAttr(mileDescTags[0]);
+  assert.strictEqual(
+    mileage.RATES.first.charity,
+    mileage.RATES.second.charity,
+    "charity is one meta figure only when both halves publish the same rate"
+  );
+  var mileBusinessFirst = centsPlain(mileage.RATES.first.business);
+  var mileBusinessSecond = centsPlain(mileage.RATES.second.business);
+  var mileCharity = centsPlain(mileage.RATES.first.charity);
+  var mileMedicalFirst = centsPlain(mileage.RATES.first.medical);
+  var mileMedicalSecond = centsPlain(mileage.RATES.second.medical);
+  var mileDerived =
+    mileage.YEAR +
+    " IRS mileage rate: " +
+    mileBusinessFirst +
+    " cents a mile Jan-Jun, " +
+    mileBusinessSecond +
+    " cents from July 1 (business). Charity " +
+    mileCharity +
+    " cents. Medical " +
+    mileMedicalFirst +
+    ", then " +
+    mileMedicalSecond +
+    " cents. Not tax advice.";
+
+  assert.strictEqual(MILE_EXPECTED.length, 147);
+  assert.strictEqual(mileDescription, MILE_EXPECTED, "mileage meta description");
+  assert.notStrictEqual(mileDescription, MILE_DESCRIPTION_BEFORE);
+  assert.strictEqual(
+    mileBuilt.indexOf('content="' + MILE_EXPECTED + '"') !== -1,
+    true,
+    "built /mileage/ meta content must be the exact description bytes"
+  );
+  assert.ok(
+    mileDescription.length <= 155,
+    "mileage meta description is " +
+      mileDescription.length +
+      " characters; max 155"
+  );
+  assert.ok(
+    /^[\x00-\x7F]+$/.test(mileDescription),
+    "mileage meta description must be plain ASCII"
+  );
+  assert.strictEqual(mileage.META_DESCRIPTION, mileDerived);
+  assert.strictEqual(
+    mileDescription,
+    mileage.META_DESCRIPTION,
+    "meta description must be derived from the IRS constants"
+  );
+  var mileLead =
+    mileage.YEAR +
+    " IRS mileage rate: " +
+    mileBusinessFirst +
+    " cents a mile Jan-Jun, " +
+    mileBusinessSecond +
+    " cents from July 1 (business).";
+  assert.strictEqual(mileDescription.indexOf(mileLead), 0);
+  assert.strictEqual(
+    mileLead,
+    "2026 IRS mileage rate: 72.5 cents a mile Jan-Jun, 76 cents from July 1 (business)."
+  );
+  assert.strictEqual(
+    mileDescription.slice(-"Not tax advice.".length),
+    "Not tax advice."
+  );
+
+  var mileLabels = [
+    mileBusinessFirst,
+    mileBusinessSecond,
+    mileCharity,
+    mileMedicalFirst,
+    mileMedicalSecond,
+  ];
+  var mileCursor = 0;
+  mileLabels.forEach(function (label) {
+    var at = mileDescription.indexOf(label, mileCursor);
+    assert.ok(at !== -1, "mileage meta must include " + label);
+    mileCursor = at + label.length;
+  });
+  assert.deepStrictEqual(mileLabels, ["72.5", "76", "14", "20.5", "23.5"]);
+
+  var mileFormAt = mileBuilt.indexOf("<form");
+  assert.ok(mileFormAt !== -1, "mileage must include <form");
+  var mileLedeAt = mileBuilt.indexOf(MILE_LEDE);
+  assert.ok(mileLedeAt !== -1, "mileage .lede must stay byte-identical");
+  assert.ok(mileLedeAt < mileFormAt, "mileage .lede must stay above the form");
+  var mileTitleTags = mileBuilt.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+  assert.strictEqual(mileTitleTags.length, 1, "mileage must have exactly one <title>");
+  assert.strictEqual(mileTitleTags[0], "<title>" + MILE_TITLE + "</title>");
+  var mileH1Tags = mileBuilt.match(/<h1>[\s\S]*?<\/h1>/g) || [];
+  assert.strictEqual(mileH1Tags.length, 1, "mileage must have exactly one <h1>");
+  assert.strictEqual(mileH1Tags[0], MILE_H1, "mileage <h1> must stay byte-identical");
+  assert.ok(
+    mileBuilt.indexOf(MILE_FOOTER) !== -1,
+    "mileage footer must stay byte-identical"
+  );
+
+  var mileSourcesAt = mileBuilt.indexOf('<section class="sources">');
+  assert.ok(mileSourcesAt !== -1, "mileage sources table missing");
+  var mileSourcesEnd = mileBuilt.indexOf("</section>", mileSourcesAt);
+  var mileSources = mileBuilt.slice(mileSourcesAt, mileSourcesEnd);
+  [
+    mileage.RATES.first.business,
+    mileage.RATES.second.business,
+    mileage.RATES.first.charity,
+    mileage.RATES.first.medical,
+    mileage.RATES.second.medical,
+  ].forEach(function (n) {
+    var label = mileage.formatCents(n);
+    var shown = mileSources.indexOf(label) !== -1;
+    var plain = centsPlain(n);
+    var inMeta = mileDescription.indexOf(plain) !== -1;
+    assert.strictEqual(shown, true, "IRS table must show " + label);
+    assert.strictEqual(
+      inMeta,
+      shown,
+      plain +
+        " belongs in the meta description only when the IRS table shows " +
+        label
+    );
+  });
+  [mileage.RATES.first.moving, mileage.RATES.second.moving].forEach(function (n) {
+    var label = mileage.formatCents(n);
+    assert.ok(
+      mileSources.indexOf(label) !== -1,
+      "IRS table must still show moving " + label
+    );
+  });
+  assert.ok(
+    mileDescription.indexOf("moving") === -1,
+    "mileage meta must not add a moving figure beyond the requested rates"
+  );
+
+  assert.ok(
+    !/property\s*=\s*["']og:description["']/i.test(mileBuilt) &&
+      !/name\s*=\s*["']twitter:description["']/i.test(mileBuilt),
+    "mileage must not gain og:description or twitter:description"
+  );
+
   var snap = JSON.parse(
     fs.readFileSync(path.join(__dirname, "fixtures/page-heads.json"), "utf8")
   );
@@ -3354,6 +3739,30 @@ faviconHtmlPages.forEach(function (file) {
     assert.ok(
       snap[rel].indexOf(RET_EXPECTED) === -1,
       rel + " head must not pick up the retirement description"
+    );
+  });
+  assert.ok(
+    snap["standard-deduction/index.html"].indexOf(
+      'content="' + STD_EXPECTED + '"'
+    ) !== -1,
+    "standard-deduction head snapshot must carry the new meta description"
+  );
+  assert.ok(
+    snap["mileage/index.html"].indexOf('content="' + MILE_EXPECTED + '"') !== -1,
+    "mileage head snapshot must carry the new meta description"
+  );
+  files.forEach(function (rel) {
+    if (rel === "standard-deduction/index.html") return;
+    assert.ok(
+      snap[rel].indexOf(STD_EXPECTED) === -1,
+      rel + " head must not pick up the standard deduction description"
+    );
+  });
+  files.forEach(function (rel) {
+    if (rel === "mileage/index.html") return;
+    assert.ok(
+      snap[rel].indexOf(MILE_EXPECTED) === -1,
+      rel + " head must not pick up the mileage description"
     );
   });
 })();
