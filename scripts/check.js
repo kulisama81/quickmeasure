@@ -4149,11 +4149,34 @@ faviconHtmlPages.forEach(function (file) {
       .length,
     0
   );
+  assert.ok(/\bname\s*=/i.test('<select id="county" name="county" disabled>'));
+  assert.ok(!/\bname\s*=/i.test('<select id="county" disabled>'));
+
+  function controlOpenTags(html) {
+    var tags = [];
+    var rest = html;
+    while (rest.length) {
+      var found = /<(input|select|textarea)\b/i.exec(rest);
+      if (!found) break;
+      var start = found.index;
+      var gt = rest.indexOf(">", start);
+      if (gt < 0) break;
+      tags.push(rest.slice(start, gt + 1));
+      rest = rest.slice(gt + 1);
+    }
+    return tags;
+  }
 
   CALCULATOR_PAGES.forEach(function (file) {
     var html = fs.readFileSync(path.join(root, file), "utf8");
     var forms = html.match(/<form\b[\s\S]*?<\/form>/gi) || [];
     assert.strictEqual(forms.length, 1, file + " calculator form");
+    controlOpenTags(html).forEach(function (tag) {
+      assert.ok(
+        !/\bname\s*=/i.test(tag),
+        file + " calculator control must not have a name attribute: " + tag
+      );
+    });
     var submission = formDataEntries(forms[0]);
     var pagePath = "/" + file.replace(/index\.html$/, "");
     var url = submittedUrl(pagePath, submission);
