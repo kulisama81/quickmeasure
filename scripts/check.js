@@ -461,6 +461,15 @@ assert.ok(sitemap.includes("https://sourcedcalc.com/hsa-limits/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/standard-deduction/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/tax-brackets/"));
 assert.ok(sitemap.includes("https://sourcedcalc.com/fsa-limits/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/about/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/privacy/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/terms/"));
+assert.ok(sitemap.includes("https://sourcedcalc.com/contact/"));
+assert.strictEqual(
+  (sitemap.match(/<loc>/g) || []).length,
+  15,
+  "sitemap must list 15 URLs"
+);
 assert.ok(sitemap.includes("https://sourcedcalc.com/</loc>"));
 assert.ok(
   !/pages\.dev/.test(sitemap),
@@ -492,6 +501,10 @@ const htmlPages = [
   ],
   ["tax-brackets/index.html", "https://sourcedcalc.com/tax-brackets/"],
   ["fsa-limits/index.html", "https://sourcedcalc.com/fsa-limits/"],
+  ["about/index.html", "https://sourcedcalc.com/about/"],
+  ["privacy/index.html", "https://sourcedcalc.com/privacy/"],
+  ["terms/index.html", "https://sourcedcalc.com/terms/"],
+  ["contact/index.html", "https://sourcedcalc.com/contact/"],
 ];
 var GA4_ID = "G-3SB1LCNKZK";
 
@@ -2669,6 +2682,10 @@ faviconHtmlPages.forEach(function (file) {
     "https://sourcedcalc.com/paint-coverage/": true,
     "https://sourcedcalc.com/concrete-bags/": true,
     "https://sourcedcalc.com/wa-heat-pump-rebate/": true,
+    "https://sourcedcalc.com/about/": true,
+    "https://sourcedcalc.com/privacy/": true,
+    "https://sourcedcalc.com/terms/": true,
+    "https://sourcedcalc.com/contact/": true,
   };
   var EXACT_TITLES = {
     "hsa-limits/index.html": HSA_TITLE,
@@ -2939,14 +2956,21 @@ faviconHtmlPages.forEach(function (file) {
     locs.push(loc);
     return _;
   });
+  var TRUST_PATHS = ["/about/", "/privacy/", "/terms/", "/contact/"];
   var calculatorPaths = locs
     .map(function (loc) {
       return new URL(loc).pathname;
     })
     .filter(function (p) {
-      return p !== "/";
+      return p !== "/" && TRUST_PATHS.indexOf(p) === -1;
     });
   assert.strictEqual(calculatorPaths.length, 10, "sitemap calculator pages");
+  TRUST_PATHS.forEach(function (trustPath) {
+    assert.ok(
+      locs.indexOf("https://sourcedcalc.com" + trustPath) !== -1,
+      "sitemap must include " + trustPath
+    );
+  });
 
   locs.forEach(function (loc) {
     var pagePath = new URL(loc).pathname;
@@ -3015,8 +3039,9 @@ faviconHtmlPages.forEach(function (file) {
 // and every other page's <head> stay byte-identical to 73fd871.
 // Issue #56 extends this same head snapshot: /standard-deduction/ and
 // /mileage/ lead with the 2026 IRS numbers from each page's own constants.
-// Title, H1, lede, footer, and every other page's <head> stay byte-identical
-// to b2a2472.
+// Title, H1, lede, and every other page's <head> stay byte-identical to
+// b2a2472. Issue #58 adds the About this site links; the expected footer
+// bytes below include that nav.
 (function () {
   var EXPECTED =
     "2026 HSA limit: $4,400 self / $8,750 family (IRS). Plus $1,000 catch-up at 55+. Not tax advice.";
@@ -3171,6 +3196,12 @@ faviconHtmlPages.forEach(function (file) {
     '        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>\n' +
     '        <a href="../paint-coverage/">Paint</a>\n' +
     '        <a href="../concrete-bags/">Concrete</a>\n' +
+    "      </nav>\n" +
+    '      <nav aria-label="About this site">\n' +
+    '        <a href="../about/">About</a>\n' +
+    '        <a href="../privacy/">Privacy</a>\n' +
+    '        <a href="../terms/">Terms</a>\n' +
+    '        <a href="../contact/">Contact</a>\n' +
     "      </nav>\n" +
     "      <p>Sourced Calc \u00B7 boring home calculators \u00B7 not a contractor</p>\n" +
     "    </footer>";
@@ -3347,6 +3378,12 @@ faviconHtmlPages.forEach(function (file) {
     '        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>\n' +
     '        <a href="../paint-coverage/">Paint</a>\n' +
     '        <a href="../concrete-bags/">Concrete</a>\n' +
+    "      </nav>\n" +
+    '      <nav aria-label="About this site">\n' +
+    '        <a href="../about/">About</a>\n' +
+    '        <a href="../privacy/">Privacy</a>\n' +
+    '        <a href="../terms/">Terms</a>\n' +
+    '        <a href="../contact/">Contact</a>\n' +
     "      </nav>\n" +
     "      <p>Sourced Calc \u00B7 boring home calculators \u00B7 not a contractor</p>\n" +
     "    </footer>";
@@ -3548,6 +3585,12 @@ faviconHtmlPages.forEach(function (file) {
     '        <a href="../wa-heat-pump-rebate/">Heat pump rebate</a>\n' +
     '        <a href="../paint-coverage/">Paint</a>\n' +
     '        <a href="../concrete-bags/">Concrete</a>\n' +
+    "      </nav>\n" +
+    '      <nav aria-label="About this site">\n' +
+    '        <a href="../about/">About</a>\n' +
+    '        <a href="../privacy/">Privacy</a>\n' +
+    '        <a href="../terms/">Terms</a>\n' +
+    '        <a href="../contact/">Contact</a>\n' +
     "      </nav>\n" +
     "      <p>Sourced Calc \u00B7 boring home calculators \u00B7 not a contractor</p>\n" +
     "    </footer>";
@@ -3765,6 +3808,406 @@ faviconHtmlPages.forEach(function (file) {
       rel + " head must not pick up the mileage description"
     );
   });
+})();
+
+// Issue #58: /about, /privacy, /terms, /contact.
+// Each page returns 200, has the GA tag, has a unique title and meta
+// description, is in the sitemap, and is linked from every shared footer.
+(function () {
+  var TRUST_PAGES = [
+    {
+      path: "/about/",
+      file: "about/index.html",
+      title: "About \u00B7 Sourced Calc",
+      description:
+        "Free calculators that use official numbers. Each page links the source and the date we last opened it. Estimate, not advice.",
+    },
+    {
+      path: "/privacy/",
+      file: "privacy/index.html",
+      title: "Privacy \u00B7 Sourced Calc",
+      description:
+        "No accounts. What you type into a calculator is not sent or stored. Google Analytics counts visits. We do not sell data or show ads.",
+    },
+    {
+      path: "/terms/",
+      file: "terms/index.html",
+      title: "Terms \u00B7 Sourced Calc",
+      description:
+        "Free to use. Numbers can change. Check the linked official source before you decide anything. No warranty.",
+    },
+    {
+      path: "/contact/",
+      file: "contact/index.html",
+      title: "Contact \u00B7 Sourced Calc",
+      description:
+        "How to contact Sourced Calc about a calculator or a correction.",
+    },
+  ];
+
+  function titleText(html) {
+    var tags = html.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+    assert.strictEqual(tags.length, 1, "expected exactly one <title>");
+    var m = tags[0].match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+    assert.ok(m, "page must have a <title>");
+    return m[1].replace(/\s+/g, " ").trim();
+  }
+
+  function metaDescription(html) {
+    var tags = (html.match(/<meta\b[^>]*>/gi) || []).filter(function (tag) {
+      return /\bname\s*=\s*["']description["']/i.test(tag);
+    });
+    assert.strictEqual(tags.length, 1, "expected exactly one meta description");
+    var m = tags[0].match(/\bcontent\s*=\s*"([^"]*)"/i);
+    if (!m) m = tags[0].match(/\bcontent\s*=\s*'([^']*)'/i);
+    assert.ok(m, "meta description is missing a content attribute");
+    return m[1].replace(/\s+/g, " ").trim();
+  }
+
+  function listHtml(dir, acc) {
+    fs.readdirSync(dir).forEach(function (name) {
+      if (name === "node_modules" || name === ".git" || name === ".wrangler") {
+        return;
+      }
+      var abs = path.join(dir, name);
+      if (fs.statSync(abs).isDirectory()) listHtml(abs, acc);
+      else if (name.endsWith(".html")) acc.push(abs);
+    });
+    return acc;
+  }
+
+  function resolveHref(fromFile, href) {
+    return path.posix.normalize(
+      path.posix.join(path.posix.dirname(fromFile), href)
+    );
+  }
+
+  function toPublicPath(resolved) {
+    if (resolved === "index.html" || resolved === "." || resolved === "") {
+      return "/";
+    }
+    var rel = resolved.replace(/^\.\//, "");
+    if (rel.endsWith("/index.html")) rel = rel.slice(0, -"index.html".length);
+    if (!rel.endsWith("/")) rel += "/";
+    if (rel.charAt(0) !== "/") rel = "/" + rel;
+    return rel;
+  }
+
+  var titles = Object.create(null);
+  var descriptions = Object.create(null);
+  listHtml(root, []).forEach(function (abs) {
+    var rel = path.relative(root, abs).split(path.sep).join("/");
+    var html = fs.readFileSync(abs, "utf8");
+    var title = titleText(html);
+    var description = metaDescription(html);
+    assert.ok(
+      !titles[title],
+      rel + " title " + JSON.stringify(title) + " duplicates " + titles[title]
+    );
+    assert.ok(
+      !descriptions[description],
+      rel + " meta description duplicates " + descriptions[description]
+    );
+    titles[title] = rel;
+    descriptions[description] = rel;
+    assert.ok(
+      !/placeholder/i.test(title) && !/\.example/i.test(title),
+      rel + " title must not contain placeholder or .example"
+    );
+    assert.ok(
+      !/placeholder/i.test(description) && !/\.example/i.test(description),
+      rel + " meta description must not contain placeholder or .example"
+    );
+  });
+
+  var locs = [];
+  sitemap.replace(/<loc>([^<]+)<\/loc>/g, function (_, loc) {
+    locs.push(loc);
+    return _;
+  });
+
+  TRUST_PAGES.forEach(function (page) {
+    var html = fs.readFileSync(path.join(root, page.file), "utf8");
+    assert.strictEqual(titleText(html), page.title, page.file + " title");
+    assert.strictEqual(
+      metaDescription(html),
+      page.description,
+      page.file + " meta description"
+    );
+    assert.ok(
+      locs.indexOf("https://sourcedcalc.com" + page.path) !== -1,
+      page.path + " must be in the sitemap"
+    );
+    assertLiveGa4(html, page.file);
+    assert.ok(
+      /<a class="skip" href="#main">Skip to content<\/a>/.test(html),
+      page.file + " must have skip-to-content"
+    );
+    assert.ok(/<main id="main"/.test(html), page.file + " must expose #main");
+  });
+
+  var contact = fs.readFileSync(path.join(root, "contact/index.html"), "utf8");
+  assert.ok(
+    /placeholder@sourcedcalc\.example/.test(contact),
+    "contact page must use the placeholder mailbox"
+  );
+  assert.ok(
+    /Placeholder\./.test(contact),
+    "contact page must mark the address as a placeholder"
+  );
+  assert.ok(
+    contact.indexOf("mailto:placeholder@sourcedcalc.example") !== -1,
+    "contact page must link the placeholder mailbox"
+  );
+
+  var privacy = fs.readFileSync(path.join(root, "privacy/index.html"), "utf8");
+  assert.ok(
+    /Google Analytics/.test(privacy),
+    "privacy page must name Google Analytics"
+  );
+  assert.ok(
+    !/cloudflareinsights|Cloudflare Web Analytics/i.test(privacy),
+    "privacy page must not claim Cloudflare Web Analytics"
+  );
+
+  listHtml(root, []).forEach(function (abs) {
+    var rel = path.relative(root, abs).split(path.sep).join("/");
+    var html = fs.readFileSync(abs, "utf8");
+    if (html.indexOf('class="site-footer"') === -1) return;
+    var footers = html.match(/<footer class="site-footer">[\s\S]*?<\/footer>/g);
+    assert.ok(footers && footers.length === 1, rel + " shared footer");
+    var siteNav = footers[0].match(
+      /<nav aria-label="About this site">[\s\S]*?<\/nav>/
+    );
+    assert.ok(siteNav, rel + " footer must link the trust pages");
+    var linked = [];
+    var re = /<a href="([^"]+)">([^<]*)<\/a>/g;
+    var m;
+    while ((m = re.exec(siteNav[0]))) {
+      linked.push(toPublicPath(resolveHref(rel, m[1])));
+    }
+    TRUST_PAGES.forEach(function (page) {
+      assert.ok(
+        linked.indexOf(page.path) !== -1,
+        rel + " footer must link to " + page.path
+      );
+    });
+  });
+
+  execFileSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "-e",
+      'import http from "http";' +
+        'import fs from "fs";' +
+        'import path from "path";' +
+        "const root=" +
+        JSON.stringify(root) +
+        ";" +
+        'const pages=["/about/","/privacy/","/terms/","/contact/"];' +
+        "function fileFor(urlPath){" +
+        'let p=decodeURIComponent(String(urlPath||"/").split("?")[0]);' +
+        'if(p.charAt(0)==="/") p=p.slice(1);' +
+        'if(p===""||p.endsWith("/")) p+="index.html";' +
+        "const abs=path.normalize(path.join(root, p));" +
+        "if(abs!==root && !abs.startsWith(root+path.sep)) return null;" +
+        "if(fs.existsSync(abs) && fs.statSync(abs).isFile()) return abs;" +
+        "return null;" +
+        "}" +
+        "const server=http.createServer((req,res)=>{" +
+        "const abs=fileFor(req.url||\"/\");" +
+        "if(!abs){res.writeHead(404,{\"content-type\":\"text/html; charset=utf-8\"});res.end(fs.readFileSync(path.join(root,\"404.html\")));return;}" +
+        "res.writeHead(200,{\"content-type\":\"text/html; charset=utf-8\"});" +
+        "res.end(fs.readFileSync(abs));" +
+        "});" +
+        'await new Promise((resolve)=>server.listen(0,"127.0.0.1",resolve));' +
+        "const port=server.address().port;" +
+        "const titles=new Set();" +
+        "for(const page of pages){" +
+        "const r=await fetch(\"http://127.0.0.1:\"+port+page);" +
+        "if(r.status!==200) throw new Error(page+\" status \"+r.status);" +
+        "const body=await r.text();" +
+        "if(!body.includes(\"G-3SB1LCNKZK\")) throw new Error(page+\" missing GA tag\");" +
+        "const m=body.match(/<title>([^<]*)<\\/title>/);" +
+        "if(!m) throw new Error(page+\" missing title\");" +
+        "if(titles.has(m[1])) throw new Error(page+\" title is not unique: \"+m[1]);" +
+        "titles.add(m[1]);" +
+        "}" +
+        "const missing=await fetch(\"http://127.0.0.1:\"+port+\"/this-page-does-not-exist-audit-404\");" +
+        "if(missing.status!==404) throw new Error(\"missing path status \"+missing.status);" +
+        "server.close();",
+    ],
+    { cwd: root }
+  );
+})();
+
+// Calculator forms must not put typed values in a no-JS GET URL.
+// Fields have no name, so a native submit has an empty form data set.
+// Enter still submits when JS is on: the button stays type="submit" and the
+// submit listener still calls preventDefault.
+(function () {
+  var SENTINEL = "qmTypedValue9f3c";
+  var CALCULATOR_PAGES = [
+    "wa-heat-pump-rebate/index.html",
+    "paint-coverage/index.html",
+    "concrete-bags/index.html",
+    "mortgage-limit/index.html",
+    "retirement-limits/index.html",
+    "mileage/index.html",
+    "hsa-limits/index.html",
+    "standard-deduction/index.html",
+    "tax-brackets/index.html",
+    "fsa-limits/index.html",
+  ];
+
+  function attrValue(tag, name) {
+    var re = new RegExp(
+      "\\b" +
+        name +
+        "\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s\"'=<>`]+))",
+      "i"
+    );
+    var m = tag.match(re);
+    if (!m) return null;
+    if (m[1] != null) return m[1];
+    if (m[2] != null) return m[2];
+    return m[3];
+  }
+
+  function isDisabled(tag) {
+    if (attrValue(tag, "disabled") != null) return true;
+    return /(?:^|\s)disabled(?:\s|\/?>|$)/i.test(tag);
+  }
+
+  function formDataEntries(formHtml) {
+    var open = formHtml.match(/^<form\b([^>]*)>/i);
+    var attrs = open ? open[1] : "";
+    var method = (attrValue(attrs, "method") || "get").toLowerCase();
+    var rest = formHtml
+      .replace(/^<form\b[^>]*>/i, "")
+      .replace(/<\/form>\s*$/i, "");
+    var entries = [];
+    while (rest.length) {
+      var found = /<(input|select|textarea|button)\b/i.exec(rest);
+      if (!found) break;
+      var tagName = found[1].toLowerCase();
+      var start = found.index;
+      var gt = rest.indexOf(">", start);
+      if (gt < 0) break;
+      var openTag = rest.slice(start, gt + 1);
+      var next = gt + 1;
+      if (!/\/\s*>$/.test(openTag) && tagName !== "input") {
+        var closeRe = new RegExp("</" + tagName + "\\s*>", "i");
+        var close = closeRe.exec(rest.slice(next));
+        if (close) next = next + close.index + close[0].length;
+      }
+      rest = rest.slice(next);
+      if (isDisabled(openTag)) continue;
+      var name = attrValue(openTag, "name");
+      if (name == null || name === "") continue;
+      var type = (attrValue(openTag, "type") || "").toLowerCase();
+      var isSubmitter =
+        tagName === "button" ||
+        (tagName === "input" &&
+          (type === "submit" ||
+            type === "button" ||
+            type === "reset" ||
+            type === "image"));
+      if (isSubmitter) continue;
+      entries.push([name, SENTINEL]);
+    }
+    return { method: method, entries: entries };
+  }
+
+  function submittedUrl(pagePath, submission) {
+    var url = "https://sourcedcalc.com" + pagePath;
+    if (submission.method === "get" && submission.entries.length) {
+      url +=
+        "?" +
+        submission.entries
+          .map(function (pair) {
+            return (
+              encodeURIComponent(pair[0]) + "=" + encodeURIComponent(pair[1])
+            );
+          })
+          .join("&");
+    }
+    return url;
+  }
+
+  var leaked = formDataEntries(
+    '<form method="get"><input name="zip" type="text" value=""></form>'
+  );
+  assert.strictEqual(leaked.entries.length, 1);
+  assert.ok(
+    submittedUrl("/paint-coverage/", leaked).indexOf(SENTINEL) !== -1,
+    "the no-JS submit helper must notice a named field"
+  );
+  assert.strictEqual(
+    formDataEntries('<form><input id="zip" type="text"></form>').entries
+      .length,
+    0
+  );
+  assert.ok(/\bname\s*=/i.test('<select id="county" name="county" disabled>'));
+  assert.ok(!/\bname\s*=/i.test('<select id="county" disabled>'));
+
+  function controlOpenTags(html) {
+    var tags = [];
+    var rest = html;
+    while (rest.length) {
+      var found = /<(input|select|textarea)\b/i.exec(rest);
+      if (!found) break;
+      var start = found.index;
+      var gt = rest.indexOf(">", start);
+      if (gt < 0) break;
+      tags.push(rest.slice(start, gt + 1));
+      rest = rest.slice(gt + 1);
+    }
+    return tags;
+  }
+
+  CALCULATOR_PAGES.forEach(function (file) {
+    var html = fs.readFileSync(path.join(root, file), "utf8");
+    var forms = html.match(/<form\b[\s\S]*?<\/form>/gi) || [];
+    assert.strictEqual(forms.length, 1, file + " calculator form");
+    controlOpenTags(html).forEach(function (tag) {
+      assert.ok(
+        !/\bname\s*=/i.test(tag),
+        file + " calculator control must not have a name attribute: " + tag
+      );
+    });
+    var submission = formDataEntries(forms[0]);
+    var pagePath = "/" + file.replace(/index\.html$/, "");
+    var url = submittedUrl(pagePath, submission);
+    assert.ok(
+      url.indexOf(SENTINEL) === -1,
+      file + " no-JS submit URL must not contain typed values: " + url
+    );
+    assert.strictEqual(
+      submission.entries.length,
+      0,
+      file + " no-JS submit must put no input values in the URL or the body"
+    );
+    assert.ok(
+      /type="submit"/.test(forms[0]),
+      file + " must keep a submit button so Enter still calculates"
+    );
+    assert.ok(
+      /addEventListener\(\s*["']submit["']/.test(html) &&
+        /preventDefault\s*\(/.test(html),
+      file + " must still calculate on submit when JS is on"
+    );
+  });
+
+  var privacy = fs.readFileSync(path.join(root, "privacy/index.html"), "utf8");
+  var privacyText = privacy.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  assert.ok(
+    privacyText.indexOf(
+      "Cloudflare serves the pages and counts visits from those requests. It does not see the numbers you type."
+    ) !== -1,
+    "privacy page must use the exact Cloudflare sentence"
+  );
 })();
 
 console.log("ok");

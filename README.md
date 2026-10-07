@@ -17,6 +17,10 @@ Public host: [https://sourcedcalc.com](https://sourcedcalc.com). The Cloudflare 
 - `/standard-deduction/` — 2026 IRS standard deduction (newsroom + Rev. Proc. 2025-32; extra if 65 or older or blind)
 - `/tax-brackets/` — 2026 IRS income-tax rates for just you / you and a spouse together (newsroom 10–37% dollars only)
 - `/fsa-limits/` — 2026 health FSA set-aside cap and leftover max when the plan lets unused money carry over (newsroom + Rev. Proc. 2025-32)
+- `/about/` — what the site is, how numbers are sourced, estimate not advice
+- `/privacy/` — no accounts; calculator inputs stay in the browser; Google Analytics counts visits
+- `/terms/` — free to use, numbers can change, no warranty
+- `/contact/` — one mailbox (placeholder until a real address is chosen)
 
 ## Run locally
 
