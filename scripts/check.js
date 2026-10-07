@@ -3841,7 +3841,7 @@ faviconHtmlPages.forEach(function (file) {
       file: "contact/index.html",
       title: "Contact \u00B7 Sourced Calc",
       description:
-        "Contact Sourced Calc. The address on this page is a placeholder until a real mailbox is chosen.",
+        "How to contact Sourced Calc about a calculator or a correction.",
     },
   ];
 
@@ -3910,6 +3910,14 @@ faviconHtmlPages.forEach(function (file) {
     );
     titles[title] = rel;
     descriptions[description] = rel;
+    assert.ok(
+      !/placeholder/i.test(title) && !/\.example/i.test(title),
+      rel + " title must not contain placeholder or .example"
+    );
+    assert.ok(
+      !/placeholder/i.test(description) && !/\.example/i.test(description),
+      rel + " meta description must not contain placeholder or .example"
+    );
   });
 
   var locs = [];
