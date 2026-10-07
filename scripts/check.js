@@ -4042,4 +4042,149 @@ faviconHtmlPages.forEach(function (file) {
   );
 })();
 
+// Calculator forms must not put typed values in a no-JS GET URL.
+// Fields have no name, so a native submit has an empty form data set.
+// Enter still submits when JS is on: the button stays type="submit" and the
+// submit listener still calls preventDefault.
+(function () {
+  var SENTINEL = "qmTypedValue9f3c";
+  var CALCULATOR_PAGES = [
+    "wa-heat-pump-rebate/index.html",
+    "paint-coverage/index.html",
+    "concrete-bags/index.html",
+    "mortgage-limit/index.html",
+    "retirement-limits/index.html",
+    "mileage/index.html",
+    "hsa-limits/index.html",
+    "standard-deduction/index.html",
+    "tax-brackets/index.html",
+    "fsa-limits/index.html",
+  ];
+
+  function attrValue(tag, name) {
+    var re = new RegExp(
+      "\\b" +
+        name +
+        "\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s\"'=<>`]+))",
+      "i"
+    );
+    var m = tag.match(re);
+    if (!m) return null;
+    if (m[1] != null) return m[1];
+    if (m[2] != null) return m[2];
+    return m[3];
+  }
+
+  function isDisabled(tag) {
+    if (attrValue(tag, "disabled") != null) return true;
+    return /(?:^|\s)disabled(?:\s|\/?>|$)/i.test(tag);
+  }
+
+  function formDataEntries(formHtml) {
+    var open = formHtml.match(/^<form\b([^>]*)>/i);
+    var attrs = open ? open[1] : "";
+    var method = (attrValue(attrs, "method") || "get").toLowerCase();
+    var rest = formHtml
+      .replace(/^<form\b[^>]*>/i, "")
+      .replace(/<\/form>\s*$/i, "");
+    var entries = [];
+    while (rest.length) {
+      var found = /<(input|select|textarea|button)\b/i.exec(rest);
+      if (!found) break;
+      var tagName = found[1].toLowerCase();
+      var start = found.index;
+      var gt = rest.indexOf(">", start);
+      if (gt < 0) break;
+      var openTag = rest.slice(start, gt + 1);
+      var next = gt + 1;
+      if (!/\/\s*>$/.test(openTag) && tagName !== "input") {
+        var closeRe = new RegExp("</" + tagName + "\\s*>", "i");
+        var close = closeRe.exec(rest.slice(next));
+        if (close) next = next + close.index + close[0].length;
+      }
+      rest = rest.slice(next);
+      if (isDisabled(openTag)) continue;
+      var name = attrValue(openTag, "name");
+      if (name == null || name === "") continue;
+      var type = (attrValue(openTag, "type") || "").toLowerCase();
+      var isSubmitter =
+        tagName === "button" ||
+        (tagName === "input" &&
+          (type === "submit" ||
+            type === "button" ||
+            type === "reset" ||
+            type === "image"));
+      if (isSubmitter) continue;
+      entries.push([name, SENTINEL]);
+    }
+    return { method: method, entries: entries };
+  }
+
+  function submittedUrl(pagePath, submission) {
+    var url = "https://sourcedcalc.com" + pagePath;
+    if (submission.method === "get" && submission.entries.length) {
+      url +=
+        "?" +
+        submission.entries
+          .map(function (pair) {
+            return (
+              encodeURIComponent(pair[0]) + "=" + encodeURIComponent(pair[1])
+            );
+          })
+          .join("&");
+    }
+    return url;
+  }
+
+  var leaked = formDataEntries(
+    '<form method="get"><input name="zip" type="text" value=""></form>'
+  );
+  assert.strictEqual(leaked.entries.length, 1);
+  assert.ok(
+    submittedUrl("/paint-coverage/", leaked).indexOf(SENTINEL) !== -1,
+    "the no-JS submit helper must notice a named field"
+  );
+  assert.strictEqual(
+    formDataEntries('<form><input id="zip" type="text"></form>').entries
+      .length,
+    0
+  );
+
+  CALCULATOR_PAGES.forEach(function (file) {
+    var html = fs.readFileSync(path.join(root, file), "utf8");
+    var forms = html.match(/<form\b[\s\S]*?<\/form>/gi) || [];
+    assert.strictEqual(forms.length, 1, file + " calculator form");
+    var submission = formDataEntries(forms[0]);
+    var pagePath = "/" + file.replace(/index\.html$/, "");
+    var url = submittedUrl(pagePath, submission);
+    assert.ok(
+      url.indexOf(SENTINEL) === -1,
+      file + " no-JS submit URL must not contain typed values: " + url
+    );
+    assert.strictEqual(
+      submission.entries.length,
+      0,
+      file + " no-JS submit must put no input values in the URL or the body"
+    );
+    assert.ok(
+      /type="submit"/.test(forms[0]),
+      file + " must keep a submit button so Enter still calculates"
+    );
+    assert.ok(
+      /addEventListener\(\s*["']submit["']/.test(html) &&
+        /preventDefault\s*\(/.test(html),
+      file + " must still calculate on submit when JS is on"
+    );
+  });
+
+  var privacy = fs.readFileSync(path.join(root, "privacy/index.html"), "utf8");
+  var privacyText = privacy.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  assert.ok(
+    privacyText.indexOf(
+      "Cloudflare serves the pages and counts visits from those requests. It does not see the numbers you type."
+    ) !== -1,
+    "privacy page must use the exact Cloudflare sentence"
+  );
+})();
+
 console.log("ok");

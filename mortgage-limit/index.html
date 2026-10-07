@@ -40,13 +40,13 @@
         </p>
         <div class="field">
           <label for="state">Which state is the home in?</label>
-          <select id="state" name="state" required>
+          <select id="state" required>
             <option value="">Choose...</option>
           </select>
         </div>
         <div class="field">
           <label for="county">Which county is the home in?</label>
-          <select id="county" name="county" required disabled>
+          <select id="county" required disabled>
             <option value="">Choose a state first</option>
           </select>
           <span class="hint after"
@@ -56,7 +56,7 @@
         </div>
         <div class="field">
           <label for="units">How many homes are in the building?</label>
-          <select id="units" name="units" required>
+          <select id="units" required>
             <option value="1" selected>1 — a regular house</option>
             <option value="2">2 — a duplex</option>
             <option value="3">3 homes</option>
@@ -71,7 +71,6 @@
           <label for="amount">How much would you borrow? (optional)</label>
           <input
             id="amount"
-            name="amount"
             type="number"
             inputmode="decimal"
             min="0"
