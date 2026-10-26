@@ -1,6 +1,8 @@
 /**
- * 2026 HSA yearly contribution limits.
- * Dollars come only from Rev. Proc. 2025-19 (PDF + IRB 2025-21) and Pub 969.
+ * 2026 HSA yearly contribution limits. The lookup stays on 2026.
+ * 2026 dollars come only from Rev. Proc. 2025-19 (PDF + IRB 2025-21) and Pub 969.
+ * 2027 dollars (next year, shown beside the result, not used by lookup) come
+ * from Rev. Proc. 2026-24. The age-55 extra stays $1,000 (Pub 969).
  * Never invent a limit (no excepted-benefit HRA figure).
  */
 (function (root) {
@@ -14,6 +16,18 @@
   var FAMILY_MIN_DEDUCTIBLE = 3400;
   var SELF_MAX_OOP = 8500;
   var FAMILY_MAX_OOP = 17000;
+
+  // Rev. Proc. 2026-24. Not the calculator default.
+  var NEXT_YEAR = 2027;
+  var NEXT_SELF_BASE = 4500;
+  var NEXT_FAMILY_BASE = 9000;
+  var NEXT_SELF_MIN_DEDUCTIBLE = 1750;
+  var NEXT_FAMILY_MIN_DEDUCTIBLE = 3500;
+  var NEXT_SELF_MAX_OOP = 8700;
+  var NEXT_FAMILY_MAX_OOP = 17400;
+  var NEXT_AGE_55_EXTRA = 1000;
+  var NEXT_SOURCE_URL = "https://www.irs.gov/pub/irs-drop/rp-26-24.pdf";
+  var NEXT_SOURCE_OPENED = "2026-10-26";
 
   var HUMAN_LINE = "How much you can put in an HSA this year";
 
@@ -150,6 +164,16 @@
     FAMILY_MIN_DEDUCTIBLE: FAMILY_MIN_DEDUCTIBLE,
     SELF_MAX_OOP: SELF_MAX_OOP,
     FAMILY_MAX_OOP: FAMILY_MAX_OOP,
+    NEXT_YEAR: NEXT_YEAR,
+    NEXT_SELF_BASE: NEXT_SELF_BASE,
+    NEXT_FAMILY_BASE: NEXT_FAMILY_BASE,
+    NEXT_SELF_MIN_DEDUCTIBLE: NEXT_SELF_MIN_DEDUCTIBLE,
+    NEXT_FAMILY_MIN_DEDUCTIBLE: NEXT_FAMILY_MIN_DEDUCTIBLE,
+    NEXT_SELF_MAX_OOP: NEXT_SELF_MAX_OOP,
+    NEXT_FAMILY_MAX_OOP: NEXT_FAMILY_MAX_OOP,
+    NEXT_AGE_55_EXTRA: NEXT_AGE_55_EXTRA,
+    NEXT_SOURCE_URL: NEXT_SOURCE_URL,
+    NEXT_SOURCE_OPENED: NEXT_SOURCE_OPENED,
   };
 })(typeof window !== "undefined" ? window : globalThis);
 

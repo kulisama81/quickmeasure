@@ -358,15 +358,39 @@ button:focus-visible {
 .assumptions,
 .sources,
 .faq,
-.fineprint {
+.fineprint,
+.next-year {
   margin-top: 1.5rem;
 }
 
 .assumptions h2,
 .sources h2,
-.faq h2 {
+.faq h2,
+.next-year h2 {
   font-size: 1.15rem;
   margin: 0 0 0.7rem;
+}
+
+.next-year {
+  max-width: 100%;
+}
+
+.next-year p {
+  margin: 0 0 0.85rem;
+}
+
+.next-year ul {
+  margin: 0 0 0.85rem;
+  padding-left: 1.15rem;
+}
+
+.next-year li {
+  margin: 0.35rem 0;
+}
+
+.next-year a,
+.next-year .note {
+  overflow-wrap: anywhere;
 }
 
 .table-wrap {
