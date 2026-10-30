@@ -1198,6 +1198,77 @@ assert.ok(
 );
 assertNoAds(hsaHtml, "hsa-limits");
 
+// Issue #63: 2027 limits (next year) render under the 2026 result.
+assert.strictEqual(hsa.NEXT_YEAR, 2027);
+assert.strictEqual(hsa.NEXT_SELF_BASE, 4500);
+assert.strictEqual(hsa.NEXT_FAMILY_BASE, 9000);
+assert.strictEqual(hsa.NEXT_SELF_MIN_DEDUCTIBLE, 1750);
+assert.strictEqual(hsa.NEXT_FAMILY_MIN_DEDUCTIBLE, 3500);
+assert.strictEqual(hsa.NEXT_SELF_MAX_OOP, 8700);
+assert.strictEqual(hsa.NEXT_FAMILY_MAX_OOP, 17400);
+assert.strictEqual(hsa.NEXT_AGE_55_EXTRA, 1000);
+assert.strictEqual(
+  hsa.NEXT_AGE_55_EXTRA,
+  hsa.AGE_55_EXTRA,
+  "age 55+ catch-up stays $1,000"
+);
+assert.strictEqual(
+  hsa.NEXT_SOURCE_URL,
+  "https://www.irs.gov/pub/irs-drop/rp-26-24.pdf"
+);
+assert.strictEqual(hsa.NEXT_SOURCE_OPENED, "2026-10-26");
+assert.strictEqual(hsa.lookup({ coverage: "self", age55: "no" }).year, 2026);
+assert.strictEqual(hsa.lookup({ coverage: "self", age55: "no" }).limit, 4400);
+assert.strictEqual(hsa.lookup({ coverage: "family", age55: "no" }).limit, 8750);
+(function () {
+  var resultAt = hsaHtml.indexOf('id="result"');
+  var blockAt = hsaHtml.indexOf('id="next-year"');
+  var sourcesAt = hsaHtml.indexOf('<section class="sources">');
+  assert.ok(resultAt !== -1, "2026 result section missing");
+  assert.ok(blockAt !== -1, "2027 limits block missing");
+  assert.ok(
+    blockAt > resultAt,
+    "2027 limits block must sit under the 2026 result"
+  );
+  assert.ok(sourcesAt !== -1 && blockAt < sourcesAt);
+  var block = hsaHtml.slice(blockAt, sourcesAt).replace(/\s+/g, " ");
+  assert.ok(block.includes("2027 limits (next year)"));
+  assert.ok(
+    block.includes(
+      "Planning for 2027? The IRS raised the HSA limit to $4,500 for just you and $9,000 for a family."
+    ),
+    "2027 block must use the plain-words sentence"
+  );
+  [
+    hsa.NEXT_SELF_BASE,
+    hsa.NEXT_FAMILY_BASE,
+    hsa.NEXT_SELF_MIN_DEDUCTIBLE,
+    hsa.NEXT_FAMILY_MIN_DEDUCTIBLE,
+    hsa.NEXT_SELF_MAX_OOP,
+    hsa.NEXT_FAMILY_MAX_OOP,
+    hsa.NEXT_AGE_55_EXTRA,
+  ].forEach(function (n) {
+    var label = hsa.formatDollar(n);
+    assert.ok(
+      block.includes(label),
+      "2027 block must render " + label
+    );
+  });
+  assert.ok(
+    block.includes(hsa.NEXT_SOURCE_URL),
+    "2027 block must render the Rev. Proc. 2026-24 URL"
+  );
+  assert.ok(block.includes("IRS Rev. Proc. 2026-24"));
+  assert.ok(
+    block.includes("last opened " + hsa.NEXT_SOURCE_OPENED),
+    "2027 citation must show last opened 2026-10-26"
+  );
+  assert.ok(!/\$2,200|\$2,250/.test(block), "do not render the HRA figure");
+  assert.ok(!/adsbygoogle|affiliate|amazon\.com|shareasale/i.test(block));
+})();
+assert.ok(sitemap.includes("https://sourcedcalc.com/hsa-limits/"));
+assert.ok(hsaHtml.includes("G-3SB1LCNKZK"));
+
 assert.strictEqual(std.YEAR, 2026);
 assert.strictEqual(std.SINGLE, 16100);
 assert.strictEqual(std.MFS, 16100);
